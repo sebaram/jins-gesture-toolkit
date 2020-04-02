@@ -1,3 +1,7 @@
+CollectedData/*
+mp3/*
+TrainedModel/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
