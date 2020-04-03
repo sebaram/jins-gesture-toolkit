@@ -1,0 +1,41 @@
+<!doctype html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
+</head>
+
+<title>Jins Toolkit</title>
+<div class="jumbotron text-center">
+    {% if name %}
+      <h1>Hello {{ name }}!</h1>
+    {% else %}
+      <h1>Hello, World!</h1>
+    {% endif %}
+</div>
+
+
+
+
+<form method="POST">
+  <div class="form-group">
+    <label for="participant_name">1. Name:</label>
+    <input type="text" class="form-control" name="input_name" aria-describedby="name_help" placeholder="P0" required>
+  </div>
+  
+  <div class="form-group">
+    <label for="target_gesture_set">2. Target Gestures</label>
+    <small id="gesture_set_help" class="form-text text-muted">-seperate each name with ","(comma) <br>-type less than 5 gestures at once</small>
+    <input type="text" class="form-control" name="input_gesture_set" placeholder="Nothing,Left Flick, Left Push, Right Flick, Right Push, Rubbing" required>
+    
+  </div>
+  
+
+  <div class="form-group">
+  <label for="target_gesture_set">3. Select number of trials for each gesture</label>
+    <input type="range" class="custom-range" name="input_number_of_gesture" required>
+    <label class="form-check-label" for="exampleCheck1">Check me out</label>
+  </div>
+  
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
