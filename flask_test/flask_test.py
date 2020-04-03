@@ -13,8 +13,10 @@ import threading, webbrowser
 
 
     
-
 app = Flask(__name__)
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
+app.config['TESTING'] = True
 
 
 
@@ -38,6 +40,10 @@ def my_form_post2():
     text = request.form['input_name']
     processed_text = text.upper()
     print("get text: "+processed_text)
+    
+    name_of_slider = request.form["input_number_of_gesture"]
+    print("slider: "+name_of_slider)
+    
     return render_template('form.html', name=processed_text)
 
 # call the 'run' method
@@ -46,6 +52,7 @@ if __name__ == '__main__':
     # ui = FlaskUI(app)
     # ui.run()
     
+
     url = "http://127.0.0.1:5000"
 
     threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
