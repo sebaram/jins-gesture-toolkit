@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'Murtaza, Juyoung'
+__author__ = 'Juyoung'
 
-"""
- Bounces a rectangle around the screen.
-
- Sample Python/Pygame Programs
- Simpson College Computer Science
- http://programarcadegames.com/
- http://simpson.edu/computer-science/
-
- Explanation video: http://youtu.be/-GmKoaX2iMs
-"""
 
 #==============================================================================
 # %load_ext autoreload
@@ -374,7 +364,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         fpsText = fps_font.render("%dfps"%(clock.get_fps()), True, (100,255,100))
         screen.blit(fpsText, (0,0))
     
-    pygame.display.set_caption("MobileHCI'18")
+    pygame.display.set_caption("Jins MEME Gesture Toolkit")
     
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
