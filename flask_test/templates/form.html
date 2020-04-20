@@ -6,17 +6,33 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function update_input_number_text() {
 
             const $valueSpan = $('.valueSpan');
-            const $value = $('#input_number_of_gesture');
+            const $value = $('input[name="input_number_of_gesture"]');
             $valueSpan.html($value.val());
             $value.on('input change', () => {
 
                 $valueSpan.html($value.val());
             });
         });
+        
+        $(document).ready(function update_values() {
+        
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+            $.getJSON($SCRIPT_ROOT+"/_initdata",
+                function(data) {
+                    $('input[name="input_name"]').val(data.participant_name);
+                    
+                    $('textarea[name="input_gesture_set"]').text(data.target_gestures);
+                    
+                    $('#input_number_of_gesture').val(data.trial_numbers);
+                    $('.valueSpan').html(data.trial_numbers);
+                   
+                });
+        });
 
+        
     </script>
 </head>
 
@@ -37,7 +53,7 @@
         <form method="POST">
             <div class="form-group">
                 <label for="participant_name" class="font-weight-bold">1. Name:</label>
-                <input type="text" class="form-control" name="input_name" aria-describedby="name_help" placeholder="P0" required>
+                <input type="text" class="form-control" id="participant_name" name="input_name" aria-describedby="name_help" placeholder="PX" required>
             </div>
 
             <div class="form-group">
@@ -52,7 +68,7 @@
             <div class="form-group">
                 <label for="target_gesture_set" class="font-weight-bold">3. Select number of trials for each gesture</label>
                 <br>
-                <input type="range" class="custom-range w-75" name="input_number_of_gesture" id="input_number_of_gesture" min="0" max="20" value="5" required>
+                <input type="range" class="custom-range w-75" name="input_number_of_gesture" id="input_number_of_gesture" min="0" max="20" value="10" required>
                 <span class="font-weight-bold text-primary ml-2 mt-1 valueSpan">0</span>
 
             </div>
