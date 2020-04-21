@@ -118,6 +118,16 @@ def review_data():
 
     return render_template('review_data.html')
 
+@app.route('/online_test', methods=['GET', 'POST'])
+def online_test():
+
+    return render_template('online_test.html')
+
+@app.route('/training', methods=['GET', 'POST'])
+def training():
+
+    return render_template('training.html')
+
 
 #########################################
 ########### Functions [start] ###########

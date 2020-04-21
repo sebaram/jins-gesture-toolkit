@@ -34,13 +34,33 @@
 
     </script>
 </head>
-
 <body>
-    <title>Jins Toolkit</title>
-    <div class="jumbotron text-center">
+    <title>Jins Gesture Toolkit</title>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Jins Gesture Toolkit</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="forms collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="#">Data collection<span class="sr-only">(current)</span></a>
+                <a  type="submit" class="nav-item nav-link" href="review_data">Data Review</a>
+                <a  type="submit" class="nav-item nav-link" href="training">Training</a>
+                <a class="nav-item nav-link" href="online_test">Online Testing</a>
+<!--                <a class="nav-item nav-link disabled" href="#">Disabled</a>-->
+            </div>
+        </div>
+    </nav>
+
+
+<!--
+    <div class="jumbotron text-center data-collection">
         <h1>Jins Gesture Toolkit</h1>
         <h2>-Data collection mode-</h2>
     </div>
+-->
     <div class="forms centerContainer">
         <form action="" method="POST">
             <div class="form-group">
@@ -56,13 +76,13 @@
                 <label for="target_gesture_set" class="font-weight-bold">3. Select number of trials for each gesture</label>
                 <br>
                 <input type="range" class="custom-range w-75" name="input_number_of_gesture" id="input_number_of_gesture" min="0" max="20" value="10" required>
-                <span class="font-weight-bold text-primary ml-2 valueSpan">0</span>
+                <span class="font-weight-bold text-primary ml-2 number-span valueSpan">0</span>
             </div>
             <button type="submit" name="action" value="startGathering" class="btn btn-primary btn-lg">Start Gathering</button>
-            
+
             <div class="border-top my-3"></div>
-            <button type="submit" name="action" value="switchTraining" class="btn btn-secondary btn-block">Switch to Training mode</button>
+            
         </form>
     </div>
-    
+
 </body>

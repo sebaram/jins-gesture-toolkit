@@ -10,4 +10,14 @@ body {
     width: 90%;
     margin: 2rem;
 }
+.number-span{
+    font-size: 1.8em;
+}
+.data-review{
+    background: #ffb599;
 
+}
+.data-collection{
+    background: #b5ddff;
+    
+}
