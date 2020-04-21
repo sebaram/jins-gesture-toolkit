@@ -6,7 +6,8 @@ Created on Thu Apr  2 12:50:38 2020
 """
 
 from flask import Flask
-from flask import request, render_template, jsonify
+from flask import request, render_template, jsonify, redirect, url_for
+
 from flaskwebgui import FlaskUI #get the FlaskUI class
 
 import pygame
@@ -36,7 +37,7 @@ pygame_is_running = False
 ############ SETTINGS [start] ############
 # set Experiment mode
 participant_name = "P0" # put name of participant
-trial_numbers = 5
+number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
 target_gestures = ["Eye Movement", "Blink"]
 
@@ -80,43 +81,42 @@ app.config['TESTING'] = True
 
 
 @app.route('/_initdata', methods= ['GET'])
-def stuff():
-    print("stuff")
-    return jsonify(participant_name=participant_name, trial_numbers=trial_numbers, target_gestures=",".join(target_gestures))
+def info_to_html():
+    print("<<stuff>>\nname:",participant_name,
+          "\ntarget_gestures:",target_gestures,
+          "\nnumber_of_trials:",number_of_trials)
+    return jsonify(participant_name=participant_name, trial_numbers=number_of_trials, target_gestures=",".join(target_gestures))
 
-
-# do your logic as usual in Flask
-@app.route("/")
-@app.route('/index')
-def my_form():
-    return render_template('form.html')
-
-
-# @app.route('/', methods=['POST'])
-# def my_form_post():
-#     text = request.form['text']
-#     processed_text = text.upper()
-#     print("get text: "+processed_text)
-#     return render_template('form.html', name=processed_text)
 
 @app.route('/', methods=['GET', 'POST'])
 def init_data_gathering():
-    global participant_name, target_gestures, trial_numbers, enable_experiment, isTraining, save_result
+    global participant_name, target_gestures, number_of_trials, pygame_is_running, enable_experiment, isTraining, save_result
     
-    participant_name = request.form['input_name'].lower()
+    
+    # for button
+    if request.method == 'POST':
+        participant_name = request.form['input_name'].upper()
        
-    target_gestures = [x.strip() for x in request.form["input_gesture_set"].split(',')]
-    
-    number_of_trials = int(request.form['input_number_of_gesture'])
-    print("name:",participant_name,
-          "\ntarget_gestures:",target_gestures,
-          "\nnumber_of_trials:",number_of_trials)
-    
-    if not pygame_is_running:
-        runPygame(participant_name, trial_numbers, target_gestures,
-                  enable_experiment=enable_experiment, save_result=save_result)
-            
+        target_gestures = [x.strip() for x in request.form["input_gesture_set"].split(',')]
+        
+        number_of_trials = int(request.form['input_number_of_gesture'])
+        print("<<init_data_gathering>>\nname:",participant_name,
+              "\ntarget_gestures:",target_gestures,
+              "\nnumber_of_trials:",number_of_trials)
+        
+        if request.form['action'] == 'startGathering':
+            if not pygame_is_running:
+                runPygame(participant_name, number_of_trials, target_gestures,
+                          enable_experiment=enable_experiment, save_result=save_result)
+        elif request.form['action'] == 'switchTraining':
+            return redirect(url_for('review_data'))
+
     return render_template('form.html', name=participant_name)
+
+@app.route('/review_data', methods=['GET', 'POST'])
+def review_data():
+
+    return render_template('review_data.html')
 
 
 #########################################
