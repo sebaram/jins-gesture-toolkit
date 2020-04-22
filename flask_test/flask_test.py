@@ -115,8 +115,11 @@ def init_data_gathering():
 
 @app.route('/review_data', methods=['GET', 'POST'])
 def review_data():
+    global save_folder
+    
+    exp_list = refreshtrainingDataList(save_folder)
 
-    return render_template('review_data.html')
+    return render_template('review_data.html', available_exp=exp_list)
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():
@@ -137,7 +140,20 @@ current_milli_time_f = lambda: float(time.time() * 1000)
 def checkFolder(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
-        
+def refreshtrainingDataList(save_folder):
+    all_pickles = [f for f in os.listdir(save_folder) if '.pickle' in f]
+    exp_names = [f.split(".")[0] for f in all_pickles if 'EXP1.pickle' in f]
+    
+    exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.pickle"))]
+    return reversed(exps_has_jins)
+    # new_df = putIMUinDF(exp1.trialDF, new_jinsDF)
+    # new_df.to_pickle(save_name_str+"_EXP%d_wJINS.pickle"%(experiment_mode))
+    # new_df.to_csv(save_name_str+"_EXP%d_wJINS.csv"%(experiment_mode))
+                       
+            
+    # for one_file in reversed(porper_training_data):
+    #     display_name = one_file
+            
 def putIMUinDF(data_df, imu_df, post_fix=""):
     new_df = data_df.copy()
     for i in range(len(new_df)):
@@ -396,9 +412,9 @@ def runPygame(participant_name, trial_numbers, target_gestures,
             new_jinsDF.to_pickle('%s_JINS.pickle'%(save_name_str+"_EXP%d"%(experiment_mode)))
         
         
-            new_df = putIMUinDF(exp1.trialDF, new_jinsDF)
-            new_df.to_pickle(save_name_str+"_EXP%d_wJINS.pickle"%(experiment_mode))
-            new_df.to_csv(save_name_str+"_EXP%d_wJINS.csv"%(experiment_mode))
+            # new_df = putIMUinDF(exp1.trialDF, new_jinsDF)
+            # new_df.to_pickle(save_name_str+"_EXP%d_wJINS.pickle"%(experiment_mode))
+            # new_df.to_csv(save_name_str+"_EXP%d_wJINS.csv"%(experiment_mode))
             
 #            new_imu_df = putTrialinIMU(exp1.trialDF, new_jinsDF)
 #            new_imu_df.to_csv(save_name_str+"_EXP%d.csv"%(experiment_mode))
