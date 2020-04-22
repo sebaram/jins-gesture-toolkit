@@ -80,6 +80,25 @@ app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
 
+
+line_labels = [
+    'JAN', 'FEB', 'MAR', 'APR',
+    'MAY', 'JUN', 'JUL', 'AUG',
+    'SEP', 'OCT', 'NOV', 'DEC'
+]
+
+line_values = [
+    967.67, 1190.89, 1079.75, 1349.19,
+    2328.91, 2504.28, 2873.83, 4764.87,
+    4349.29, 6458.30, 9907, 16297
+]
+
+colors = [
+    "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
+    "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
+    "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
+
+
 @app.route('/_initdata', methods= ['GET'])
 def info_to_html():
     print("<<stuff>>\nname:",participant_name,
@@ -122,7 +141,8 @@ def review_data():
     if request.method == 'POST':
         if request.form['action'] == 'startReview':
             print("startReview")
-    return render_template('review_data.html', available_exp=exp_list)
+    return render_template('review_data.html', available_exp=exp_list,
+                            title='Bitcoin Monthly Price in USD', max=17000, labels=line_labels, values=line_values)
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():

@@ -5,6 +5,66 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jins_toolkit.css') }}">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+    
+    <script>
+        $(document).ready(function () {
+            // bar chart data
+          var barData = {
+            labels : [
+              {% for item in labels %}
+                "{{ item }}",
+              {% endfor %}
+            ],
+
+            datasets : [{
+              fillColor: "rgba(151,187,205,0.2)",
+              strokeColor: "rgba(151,187,205,1)",
+              pointColor: "rgba(151,187,205,1)",
+              pointStrokeColor: "#fff",
+              pointHighlightFill: "#fff",
+              pointHighlightStroke: "rgba(151,187,205,1)",
+              bezierCurve : false,
+              data : [
+            {% for item in values %}
+                  {{ item }},
+                {% endfor %}]
+              }
+        ]
+          }
+
+          Chart.defaults.global.animationSteps = 50;
+          Chart.defaults.global.tooltipYPadding = 16;
+          Chart.defaults.global.tooltipCornerRadius = 0;
+          Chart.defaults.global.tooltipTitleFontStyle = "normal";
+          Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+          Chart.defaults.global.animationEasing = "easeOutBounce";
+          Chart.defaults.global.responsive = false;
+          Chart.defaults.global.scaleLineColor = "black";
+          Chart.defaults.global.scaleFontSize = 16;
+
+          // get bar chart canvas
+          var mychart = document.getElementById("chart").getContext("2d");
+
+          steps = 10
+          max = {{ max }}
+          // draw bar chart
+          var LineChartDemo = new Chart(mychart).Line(barData, {
+            scaleOverride: true,
+            scaleSteps: steps,
+            scaleStepWidth: Math.ceil(max / steps),
+            scaleStartValue: 0,
+            scaleShowVerticalLines: true,
+            scaleShowGridLines : true,
+            barShowStroke : true,
+            scaleShowLabels: true,
+            bezierCurve: false,
+          });
+        });
+
+      
+
+    </script>
 
 </head>
 
@@ -33,7 +93,7 @@
         <form action="" method="POST">
             <div class="form-group">
                 <label for="target_data_selection" class="font-weight-bold">1. Select target Data:</label>
-                <select type="text" class="form-control" id="target_data_selection" required>
+                <select type="text" class="form-control" id="target_data_selection" >
                     {% for one_exp in available_exp %}
                     <option value="{{one_exp}}" SELECTED>{{one_exp}}</option>"
                     {% endfor %}
@@ -41,28 +101,20 @@
             </div>
             <div class="form-group">
                 <label for="segment_type" class="font-weight-bold">2. Select segmentation type:</label>
-                <select type="text" class="form-control" id="segment_type" required>
+                <select type="text" class="form-control" id="segment_type">
                     <option>Basic(1s Fixed window)</option>
+<!--
                     <option>Full</option>
                     <option>Fixed window</option>
+-->
                 </select>
             </div>
-
-            <!-- <div class="form-group">
-                <label for="target_gesture_set" class="font-weight-bold">2. Target Gestures</label>
-                <textarea rows="3" class="form-control" name="input_gesture_set">Nothing,Left Flick,Left Push,Right Flick,Right Push,Rubbing</textarea>
-                <small id="gesture_set_help" class="form-text text-muted">-seperate each name with ","(comma) <br>-type less than 5 gestures at once</small>
-            </div>
-            <div class="form-group ">
-                <label for="target_gesture_set" class="font-weight-bold">3. Select number of trials for each gesture</label>
-                <br>
-                <input type="range" class="custom-range slider-trials" name="input_number_of_gesture" id="input_number_of_gesture" min="0" max="20" value="10" required>
-                <span class="font-weight-bold text-primary ml-2 number-span valueSpan">0</span>
-            </div> -->
             <button type="submit" name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
 
             <div class="border-top my-3"></div>
-
         </form>
     </div>
+    
+    <canvas id="chart" width="600" height="400"></canvas>
+    
     </body>
