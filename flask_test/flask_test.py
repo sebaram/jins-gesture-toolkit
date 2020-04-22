@@ -141,7 +141,8 @@ def review_data():
     if request.method == 'POST':
         if request.form['action'] == 'startReview':
             print("startReview")
-    return render_template('review_data.html', available_exp=exp_list,
+    charts = ['chart{}'.format(i) for i in range(5)]
+    return render_template('review_data.html', available_exp=exp_list, charts=charts,
                             title='Bitcoin Monthly Price in USD', max=17000, labels=line_labels, values=line_values)
 
 @app.route('/online_test', methods=['GET', 'POST'])
