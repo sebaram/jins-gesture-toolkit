@@ -118,7 +118,10 @@ def review_data():
     global save_folder
     
     exp_list = refreshtrainingDataList(save_folder)
-
+    
+    if request.method == 'POST':
+        if request.form['action'] == 'startReview':
+            print("startReview")
     return render_template('review_data.html', available_exp=exp_list)
 
 @app.route('/online_test', methods=['GET', 'POST'])
@@ -146,13 +149,6 @@ def refreshtrainingDataList(save_folder):
     
     exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.pickle"))]
     return reversed(exps_has_jins)
-    # new_df = putIMUinDF(exp1.trialDF, new_jinsDF)
-    # new_df.to_pickle(save_name_str+"_EXP%d_wJINS.pickle"%(experiment_mode))
-    # new_df.to_csv(save_name_str+"_EXP%d_wJINS.csv"%(experiment_mode))
-                       
-            
-    # for one_file in reversed(porper_training_data):
-    #     display_name = one_file
             
 def putIMUinDF(data_df, imu_df, post_fix=""):
     new_df = data_df.copy()
