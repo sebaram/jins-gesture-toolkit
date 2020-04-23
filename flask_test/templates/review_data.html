@@ -8,66 +8,107 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
     
     <script>
+        $(document).ready(function update_charts() {
+
+            $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
+            $.getJSON($SCRIPT_ROOT + "/_gestureplot",
+                function(data) {
+                    var one_gesture = data.gestures_with_all_trials[0];
+                    for (one_gesture of data.gestures_with_all_trials){
+                        add_one_chart(one_gesture.name, one_gesture.trials)
+                        console.log(one_gesture);
+                    }
+                    
+                    
+                });
+        });
+        
+        function add_one_chart(name, trials){
+            var append_str = '\
+<div  class="container">\
+    <h3 >'+name+'</h3>\
+    <div class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
+';
+            for( one_trial of trials) {
+                console.log(one_trial);
+                append_str += '\
+        <div class="col-4">\
+            <div class="card card-block" >\
+                <div class="card-body">\
+                    <h5 class="card-title">'+one_trial.id+'</h5>\
+                    <canvas id="'+one_trial.id+'" ></canvas>\
+                </div>\
+            </div>\
+        </div>';
+                     
+            }
+            append_str += '</div>\n</div>';
+
+
+            $(append_str ).appendTo( ".plot_charts" );
+            
+        }
+        
         
         $(document).ready(function () {
-            {% if data_to_plot is not none %}   
-
-            // bar chart data
-            var barData = {
-            labels : [
-              {% for one_label in labels %}
-                "{{ one_label }}",
-              {% endfor %}
-            ],
-
-            datasets : [{
-              fillColor: "rgba(151,187,205,0.2)",
-              strokeColor: "rgba(151,187,205,1)",
-              pointColor: "rgba(151,187,205,1)",
-              pointStrokeColor: "#fff",
-              pointHighlightFill: "#fff",
-              pointHighlightStroke: "rgba(151,187,205,1)",
-              bezierCurve : false,
-              data : [
-            {% for one_val in values %}
-                  {{ one_val }},
-                {% endfor %}]
-              }]
-            }
-
-            Chart.defaults.global.animationSteps = 50;
-            Chart.defaults.global.tooltipYPadding = 16;
-            Chart.defaults.global.tooltipCornerRadius = 0;
-            Chart.defaults.global.tooltipTitleFontStyle = "normal";
-            Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-            Chart.defaults.global.animationEasing = "easeOutBounce";
-            Chart.defaults.global.responsive = false;
-            Chart.defaults.global.scaleLineColor = "black";
-            Chart.defaults.global.scaleFontSize = 16;
-
-            // get bar chart canvas
-            var mychart = document.getElementById("chart0").getContext("2d");
-
-            steps = 10
-            max = {{ max }}
-            // draw bar chart
-            var LineChartDemo = new Chart(mychart).Line(barData, {
-                                                                    scaleOverride: true,
-                                                                    scaleSteps: steps,
-                                                                    scaleStepWidth: Math.ceil(max / steps),
-                                                                    scaleStartValue: 0,
-                                                                    scaleShowVerticalLines: true,
-                                                                    scaleShowGridLines : true,
-                                                                    barShowStroke : true,
-                                                                    scaleShowLabels: true,
-                                                                    bezierCurve: false,
-                                                                    });
-            {%endif %}
+//            {% if data_to_plot is not none %}   
+//            
+//            console.log("test")
+//
+//            // bar chart data
+//            var barData = {
+//                labels : [
+//                  {% for one_label in labels %}
+//                    "{{ one_label }}",
+//                  {% endfor %}
+//                ],
+//
+//                datasets : [{
+//                  fillColor: "rgba(151,187,205,0.2)",
+//                  strokeColor: "rgba(151,187,205,1)",
+//                  pointColor: "rgba(151,187,205,1)",
+//                  pointStrokeColor: "#fff",
+//                  pointHighlightFill: "#fff",
+//                  pointHighlightStroke: "rgba(151,187,205,1)",
+//                  bezierCurve : false,
+//                  data : [
+//                {% for one_val in values %}
+//                      {{ one_val }},
+//                    {% endfor %}]
+//                  }]
+//            }
+//
+//            Chart.defaults.global.animationSteps = 50;
+//            Chart.defaults.global.tooltipYPadding = 16;
+//            Chart.defaults.global.tooltipCornerRadius = 0;
+//            Chart.defaults.global.tooltipTitleFontStyle = "normal";
+//            Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+//            Chart.defaults.global.animationEasing = "easeOutBounce";
+//            Chart.defaults.global.responsive = false;
+//            Chart.defaults.global.scaleLineColor = "black";
+//            Chart.defaults.global.scaleFontSize = 16;
+//
+//            // get bar chart canvas
+//            var mychart = document.getElementById("chart0").getContext("2d");
+//
+//            steps = 10
+//            max = {{ max }}
+//            // draw bar chart
+//            var LineChartDemo = new Chart(mychart).Line(barData, {
+//                                                                    scaleOverride: true,
+//                                                                    scaleSteps: steps,
+//                                                                    scaleStepWidth: Math.ceil(max / steps),
+//                                                                    scaleStartValue: 0,
+//                                                                    scaleShowVerticalLines: true,
+//                                                                    scaleShowGridLines : true,
+//                                                                    barShowStroke : true,
+//                                                                    scaleShowLabels: true,
+//                                                                    bezierCurve: false,
+//                                                                    });
+//            {%endif %}
+  
             
-            $('#test').on('click', function(event){
-                console.log('click');
-                
-            });
+            
             
             // Variable to store current X scrolled position.
             var current = 0;
@@ -150,27 +191,9 @@
         </form>
     </div>
     
-    {% if data_to_plot is not none %}   .
-        {% for one_gesture in data_to_plot %}
-            <div  class="container ">
-                <h3 >{{one_gesture.name}}</h3>
-                <div id="{{}}" class="row flex-nowrap horizontal-scroll full-contatiner plot_div">
-                    {% for one_trial in one_gesture.trials %}
-                        <div class="col-4">
-                            <div class="card card-block" >
-                                <div class="card-body">
-                                    <h5 class="card-title">{{one_trial.id}}</h5>
-                                    <canvas id="{{one_trial.id}}" ></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>   
-        {% endfor %}
-    {%endif %}
-    
-    
+    <div id="plot_charts" class="container plot_charts">
+    </div>
+
  
     
 
