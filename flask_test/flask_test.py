@@ -81,22 +81,6 @@ app.config['TESTING'] = True
 
 
 
-line_labels = [
-    'JAN', 'FEB', 'MAR', 'APR',
-    'MAY', 'JUN', 'JUL', 'AUG',
-    'SEP', 'OCT', 'NOV', 'DEC'
-]
-
-line_values = [
-    967.67, 1190.89, 1079.75, 1349.19,
-    2328.91, 2504.28, 2873.83, 4764.87,
-    4349.29, 6458.30, 9907, 16297
-]
-
-colors = [
-    "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
-    "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
-    "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
 
 
 @app.route('/_initdata', methods= ['GET'])
@@ -105,6 +89,29 @@ def info_to_html():
           "\ntarget_gestures:",target_gestures,
           "\nnumber_of_trials:",number_of_trials)
     return jsonify(participant_name=participant_name, trial_numbers=number_of_trials, target_gestures=",".join(target_gestures))
+
+@app.route('/_gestureplot', methods= ['GET'])
+def send_gesture_plot_info():
+    one_chart_info = {'name':'Gesture_0',
+                      'trials': [{'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
+                                            'MAY', 'JUN', 'JUL', 'AUG',
+                                            'SEP', 'OCT', 'NOV', 'DEC'],
+                                    'line_vals' :  [ 967.67, 1190.89, 1079.75, 1349.19,
+                                            2328.91, 2504.28, 2873.83, 4764.87,
+                                            4349.29, 6458.30, 9907, 16297],
+                                    'max':17000,
+                                    'id':'Gesture_0_0'},
+                                   {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
+                                            'MAY', 'JUN', 'JUL', 'AUG',
+                                            'SEP', 'OCT', 'NOV', 'DEC'],
+                                    'line_vals' :  [ 16297, 967.67, 1190.89, 1079.75, 1349.19,
+                                            2328.91, 2504.28, 2873.83, 4764.87,
+                                            4349.29, 6458.30, 9907],
+                                    'max':17000,
+                                    'id':'Gesture_0_1'}]
+                      } 
+    gestures_with_all_trials = [one_chart_info, one_chart_info, one_chart_info]
+    return jsonify(gestures_with_all_trials=gestures_with_all_trials)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -141,9 +148,26 @@ def review_data():
     if request.method == 'POST':
         if request.form['action'] == 'startReview':
             print("startReview")
+            
+            
     charts = ['chart{}'.format(i) for i in range(5)]
-    return render_template('review_data.html', available_exp=exp_list, charts=charts,
-                            title='Bitcoin Monthly Price in USD', max=17000, labels=line_labels, values=line_values)
+    
+    # charts = None
+    line_labels = [
+        'JAN', 'FEB', 'MAR', 'APR',
+        'MAY', 'JUN', 'JUL', 'AUG',
+        'SEP', 'OCT', 'NOV', 'DEC'
+    ]
+    
+    line_values = [
+        967.67, 1190.89, 1079.75, 1349.19,
+        2328.91, 2504.28, 2873.83, 4764.87,
+        4349.29, 6458.30, 9907, 16297
+    ]
+    
+    
+
+    return render_template('review_data.html', available_exp=exp_list)
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():
