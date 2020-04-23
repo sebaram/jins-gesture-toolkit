@@ -13,24 +13,25 @@
             $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
             $.getJSON($SCRIPT_ROOT + "/_gestureplot",
                 function(data) {
-                    var one_gesture = data.gestures_with_all_trials[0];
+                    var el = document.getElementById('plot_charts');
+                    while( el.hasChildNodes() ){
+                        el.removeChild(el.lastChild);
+                    }
                     for (one_gesture of data.gestures_with_all_trials){
-                        add_one_chart(one_gesture.name, one_gesture.trials)
-                        console.log(one_gesture);
+                        add_one_chart_list(one_gesture.name, one_gesture.trials)
                     }
                     
                     
                 });
         });
         
-        function add_one_chart(name, trials){
+        function add_one_chart_list(name, trials){
             var append_str = '\
-<div  class="container">\
-    <h3 >'+name+'</h3>\
+<div class="container">\
+    <h3>'+name+'</h3>\
     <div class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
 ';
             for( one_trial of trials) {
-                console.log(one_trial);
                 append_str += '\
         <div class="col-4">\
             <div class="card card-block" >\
@@ -44,12 +45,10 @@
             }
             append_str += '</div>\n</div>';
 
-
-            $(append_str ).appendTo( ".plot_charts" );
+            $(append_str ).appendTo( "#plot_charts" );
             
         }
-        
-        
+
         $(document).ready(function () {
 //            {% if data_to_plot is not none %}   
 //            
