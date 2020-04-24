@@ -18,14 +18,11 @@
                         el.removeChild(el.lastChild);
                     }
                     for (one_gesture of data.gestures_with_all_trials){
-                        add_one_chart_list(one_gesture.name, one_gesture.trials)
+                        add_one_chart_list(one_gesture.name, one_gesture.trials);
+                        plot_one_gesture_charts(one_gesture.name, one_gesture.trials);
                         document.getElementById(one_gesture.name).addEventListener("mousewheel", horizontal_wheel);
-
                     }
-                    
-                    
                 });
-        
         });
         
         
@@ -52,6 +49,7 @@
             $(this).scrollLeft(current_dict[this_id] );
         }
         
+        
         function add_one_chart_list(name, trials){
             var append_str = '\
 <div class="container">\
@@ -72,85 +70,58 @@
             }
             append_str += '</div>\n</div>';
 
-            $(append_str ).appendTo( "#plot_charts" );
-            
+            $(append_str ).appendTo( "#plot_charts" );  
         }
-//        $(document).ready(function () {
-//            $(".test").on("click", function(e) {
-//                console.log("click");
-//
-//            });
-//            
-//        });
+        
+        function plot_one_gesture_charts(name, trials){
+            var one_trial = trials[0]
+            
+            for (one_trial of trials){
+                var barData = {
+                    labels : one_trial.tick_label,
 
-        $(document).ready(function () {
-//            {% if data_to_plot is not none %}   
-//            
-//            console.log("test")
-//
-//            // bar chart data
-//            var barData = {
-//                labels : [
-//                  {% for one_label in labels %}
-//                    "{{ one_label }}",
-//                  {% endfor %}
-//                ],
-//
-//                datasets : [{
-//                  fillColor: "rgba(151,187,205,0.2)",
-//                  strokeColor: "rgba(151,187,205,1)",
-//                  pointColor: "rgba(151,187,205,1)",
-//                  pointStrokeColor: "#fff",
-//                  pointHighlightFill: "#fff",
-//                  pointHighlightStroke: "rgba(151,187,205,1)",
-//                  bezierCurve : false,
-//                  data : [
-//                {% for one_val in values %}
-//                      {{ one_val }},
-//                    {% endfor %}]
-//                  }]
-//            }
-//
-//            Chart.defaults.global.animationSteps = 50;
-//            Chart.defaults.global.tooltipYPadding = 16;
-//            Chart.defaults.global.tooltipCornerRadius = 0;
-//            Chart.defaults.global.tooltipTitleFontStyle = "normal";
-//            Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-//            Chart.defaults.global.animationEasing = "easeOutBounce";
-//            Chart.defaults.global.responsive = false;
-//            Chart.defaults.global.scaleLineColor = "black";
-//            Chart.defaults.global.scaleFontSize = 16;
-//
-//            // get bar chart canvas
-//            var mychart = document.getElementById("chart0").getContext("2d");
-//
-//            steps = 10
-//            max = {{ max }}
-//            // draw bar chart
-//            var LineChartDemo = new Chart(mychart).Line(barData, {
-//                                                                    scaleOverride: true,
-//                                                                    scaleSteps: steps,
-//                                                                    scaleStepWidth: Math.ceil(max / steps),
-//                                                                    scaleStartValue: 0,
-//                                                                    scaleShowVerticalLines: true,
-//                                                                    scaleShowGridLines : true,
-//                                                                    barShowStroke : true,
-//                                                                    scaleShowLabels: true,
-//                                                                    bezierCurve: false,
-//                                                                    });
-//            {%endif %}
-  
-            
-            
-            
-            
-            
-            
-            
+                    datasets : [{
+                      fillColor: "rgba(151,187,205,0.2)",
+                      strokeColor: "rgba(151,187,205,1)",
+                      pointColor: "rgba(151,187,205,1)",
+                      pointStrokeColor: "#fff",
+                      pointHighlightFill: "#fff",
+                      pointHighlightStroke: "rgba(151,187,205,1)",
+                      bezierCurve : false,
+                      data : one_trial.line_vals}]
+                }
+                console.log(barData);
 
-});
-    
+                Chart.defaults.global.animationSteps = 50;
+                Chart.defaults.global.tooltipYPadding = 16;
+                Chart.defaults.global.tooltipCornerRadius = 0;
+                Chart.defaults.global.tooltipTitleFontStyle = "normal";
+                Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
+                Chart.defaults.global.animationEasing = "easeOutBounce";
+                Chart.defaults.global.responsive = false;
+                Chart.defaults.global.scaleLineColor = "black";
+                Chart.defaults.global.scaleFontSize = 16;
 
+                // get bar chart canvas
+                var mychart = document.getElementById(name+one_trial.id).getContext("2d");
+
+                var steps = 10;
+                var max = one_trial.max;
+                // draw bar chart
+                var LineChartDemo = new Chart(mychart).Line(barData, {
+                                                                        scaleOverride: true,
+                                                                        scaleSteps: steps,
+                                                                        scaleStepWidth: Math.ceil(max / steps),
+                                                                        scaleStartValue: 0,
+                                                                        scaleShowVerticalLines: true,
+                                                                        scaleShowGridLines : true,
+                                                                        barShowStroke : true,
+                                                                        scaleShowLabels: true,
+                                                                        bezierCurve: false,
+                                                                        });
+                
+            }
+        }
       
 
     </script>
