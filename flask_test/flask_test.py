@@ -90,13 +90,20 @@ def info_to_html():
           "\nnumber_of_trials:",number_of_trials)
     return jsonify(participant_name=participant_name, trial_numbers=number_of_trials, target_gestures=",".join(target_gestures))
 
-@app.route('/_gestureplot', methods= ['GET'])
+@app.route('/_gestureplot', methods= ['GET','POST'])
 def send_gesture_plot_info():
+    print("===startReview")
+    # selected_exp = request.form.get("target_data_selection")
+    # selected_segment_method = request.form.get("target_data_selection")
+    # print("selected_exp: "+selected_exp)
+    # print("selected_segment_method: "+selected_segment_method)
+            
+            
     one_chart_info = {'name':'Gesture_0',
                       'trials': [{'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 0, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -108,7 +115,7 @@ def send_gesture_plot_info():
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 5000, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -120,7 +127,7 @@ def send_gesture_plot_info():
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 8000, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -132,7 +139,7 @@ def send_gesture_plot_info():
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 11070, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -144,7 +151,7 @@ def send_gesture_plot_info():
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 13000, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -156,7 +163,7 @@ def send_gesture_plot_info():
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
-                                    'sensor_vals' : {'a': [ 967.67, 1190.89, 1079.75, 1349.19,
+                                    'sensor_vals' : {'a': [ 16000, 1190.89, 1079.75, 1349.19,
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                                      'b': [ 4349.29, 6458.30, 9907, 16297, 967.67, 1190.89, 1079.75, 1349.19,
@@ -214,27 +221,12 @@ def review_data():
     exp_list = refreshtrainingDataList(save_folder)
     
     if request.method == 'POST':
+            
         if request.form['action'] == 'startReview':
-            print("startReview")
+            print("===startReview")
+            selected_exp = request.form.get("target_data_selection")
+            selected_segment_method = request.form.get("target_data_selection")
             
-            
-    charts = ['chart{}'.format(i) for i in range(5)]
-    
-    # charts = None
-    line_labels = [
-        'JAN', 'FEB', 'MAR', 'APR',
-        'MAY', 'JUN', 'JUL', 'AUG',
-        'SEP', 'OCT', 'NOV', 'DEC'
-    ]
-    
-    line_values = [
-        967.67, 1190.89, 1079.75, 1349.19,
-        2328.91, 2504.28, 2873.83, 4764.87,
-        4349.29, 6458.30, 9907, 16297
-    ]
-    
-    
-
     return render_template('review_data.html', available_exp=exp_list)
 
 @app.route('/online_test', methods=['GET', 'POST'])

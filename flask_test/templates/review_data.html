@@ -9,7 +9,6 @@
     
     <script>
         $(document).ready(function update_charts() {
-
             $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
             $.getJSON($SCRIPT_ROOT + "/_gestureplot",
                 function(data) {
@@ -155,7 +154,7 @@
         <form action="" method="POST">
             <div class="form-group">
                 <label for="target_data_selection" class="font-weight-bold test">1. Select target Data:</label>
-                <select type="text" class="form-control" id="target_data_selection" name="target_data_selection" >
+                <select type="text" class="form-control" id="target_data_selection" name="target_data_selection">
                     {% for one_exp in available_exp %}
                     <option value="{{one_exp}}" SELECTED>{{one_exp}}</option>"
                     {% endfor %}
@@ -165,23 +164,30 @@
                 <label for="segment_type" class="font-weight-bold">2. Select segmentation type:</label>
                 <select type="text" class="form-control" id="segment_type" name="segment_type">
                     <option>Basic(1s Fixed window)</option>
-<!--
+                    <!--
                     <option>Full</option>
                     <option>Fixed window</option>
 -->
                 </select>
             </div>
-            <button type="submit" name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
-            
-            
-
+            <button type="submit" name="action" value="startReview" class="btn btn-primary btn-lg">Run Segmentation</button>
             <div class="border-top my-3"></div>
+
         </form>
+        <div class="form-group">
+            <label for="target_data_selection" class="font-weight-bold test">1. Select segmented data to review:</label>
+            <select type="text" class="form-control" id="target_data_selection" name="target_data_selection">
+                {% for one_exp in available_exp %}
+                <option value="{{one_exp}}" SELECTED>{{one_exp}}</option>"
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-primary btn-lg">Start Review</button>
     </div>
+    
     
     <div id="plot_charts" class="plot_charts">
     </div>
-
  
     
 
