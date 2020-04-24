@@ -54,7 +54,7 @@
             var append_str = '\
 <div>\
     <h3>'+name+'</h3>\
-    <div id="'+name+'"class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
+    <div id="'+name+'"class="row flex-nowrap horizontal-scroll plot_div">\
 ';
             for( one_trial of trials) {
                 append_str += '\
@@ -155,7 +155,7 @@
         <form action="" method="POST">
             <div class="form-group">
                 <label for="target_data_selection" class="font-weight-bold test">1. Select target Data:</label>
-                <select type="text" class="form-control" id="target_data_selection" >
+                <select type="text" class="form-control" id="target_data_selection" name="target_data_selection" >
                     {% for one_exp in available_exp %}
                     <option value="{{one_exp}}" SELECTED>{{one_exp}}</option>"
                     {% endfor %}
@@ -163,7 +163,7 @@
             </div>
             <div class="form-group">
                 <label for="segment_type" class="font-weight-bold">2. Select segmentation type:</label>
-                <select type="text" class="form-control" id="segment_type">
+                <select type="text" class="form-control" id="segment_type" name="segment_type">
                     <option>Basic(1s Fixed window)</option>
 <!--
                     <option>Full</option>
