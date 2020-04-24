@@ -19,17 +19,44 @@
                     }
                     for (one_gesture of data.gestures_with_all_trials){
                         add_one_chart_list(one_gesture.name, one_gesture.trials)
+                        document.getElementById(one_gesture.name).addEventListener("mousewheel", horizontal_wheel);
+
                     }
                     
                     
                 });
+        
         });
+        
+        
+        
+        var current_dict = {};
+        // Pixel increment you wish on each wheel spin.
+        var ScrollX_pixelPer = 10;
+        function horizontal_wheel (e) {
+            e.preventDefault();
+
+            // Get the deltaY (always +/- 33.33333206176758) and multiply by the pixel increment you wish.
+//            var delta = ScrollX_pixelPer*(parseInt(e.originalEvent.deltaY)/33);
+            var delta = ScrollX_pixelPer*(parseInt(e.deltaY)/33);
+            var this_id = $(this).attr("id")
+            if(!(this_id in current_dict)){
+                current_dict[this_id] = 0;
+            }
+
+            // Increment/decrement current.
+            current_dict[this_id] = Math.min(current_dict[this_id]+delta, $(this).get(0).scrollWidth-$(this).width());
+            current_dict[this_id] = Math.max(current_dict[this_id], 0);
+
+            // Apply the new position.
+            $(this).scrollLeft(current_dict[this_id] );
+        }
         
         function add_one_chart_list(name, trials){
             var append_str = '\
 <div class="container">\
     <h3>'+name+'</h3>\
-    <div class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
+    <div id="'+name+'"class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
 ';
             for( one_trial of trials) {
                 append_str += '\
@@ -37,7 +64,7 @@
             <div class="card card-block" >\
                 <div class="card-body">\
                     <h5 class="card-title">'+one_trial.id+'</h5>\
-                    <canvas id="'+one_trial.id+'" ></canvas>\
+                    <canvas id="'+name+one_trial.id+'" ></canvas>\
                 </div>\
             </div>\
         </div>';
@@ -48,6 +75,13 @@
             $(append_str ).appendTo( "#plot_charts" );
             
         }
+//        $(document).ready(function () {
+//            $(".test").on("click", function(e) {
+//                console.log("click");
+//
+//            });
+//            
+//        });
 
         $(document).ready(function () {
 //            {% if data_to_plot is not none %}   
@@ -109,25 +143,7 @@
             
             
             
-            // Variable to store current X scrolled position.
-            var current = 0;
-            // Pixel increment you wish on each wheel spin.
-            var ScrollX_pixelPer = 10;
-            $(".plot_div").on("mousewheel", function(e) {
-                e.preventDefault();
-
-                // Get the deltaY (always +/- 33.33333206176758) and multiply by the pixel increment you wish.
-                var delta = ScrollX_pixelPer*(parseInt(e.originalEvent.deltaY)/33);
-
-                // Increment/decrement current.
-                current += delta;
-                //console.log(current);
-
-                console.log($(this).scrollTop() )
-                // Apply the new position.
-                $(this).scrollLeft($(this).scrollTop() + delta);
-
-            });
+            
             
             
             
@@ -165,7 +181,7 @@
     <div class="forms centerContainer">
         <form action="" method="POST">
             <div class="form-group">
-                <label for="target_data_selection" class="font-weight-bold" id="test">1. Select target Data:</label>
+                <label for="target_data_selection" class="font-weight-bold test">1. Select target Data:</label>
                 <select type="text" class="form-control" id="target_data_selection" >
                     {% for one_exp in available_exp %}
                     <option value="{{one_exp}}" SELECTED>{{one_exp}}</option>"

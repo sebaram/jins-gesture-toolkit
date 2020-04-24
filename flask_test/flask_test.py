@@ -100,7 +100,7 @@ def send_gesture_plot_info():
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907, 16297],
                                     'max':17000,
-                                    'id':'Gesture_0_0'},
+                                    'id':'0'},
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
@@ -108,7 +108,7 @@ def send_gesture_plot_info():
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907],
                                     'max':17000,
-                                    'id':'Gesture_0_1'},
+                                    'id':'1'},
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
@@ -116,7 +116,7 @@ def send_gesture_plot_info():
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907],
                                     'max':17000,
-                                    'id':'Gesture_0_2'},
+                                    'id':'2'},
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
@@ -124,7 +124,7 @@ def send_gesture_plot_info():
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907],
                                     'max':17000,
-                                    'id':'Gesture_0_3'},
+                                    'id':'3'},
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
@@ -132,7 +132,7 @@ def send_gesture_plot_info():
                                             2328.91, 2504.28, 2873.83, 4764.87,
                                             4349.29, 6458.30, 9907],
                                     'max':17000,
-                                    'id':'Gesture_0_4'},
+                                    'id':'4'},
                                    {'tick_label': ['JAN', 'FEB', 'MAR', 'APR',
                                             'MAY', 'JUN', 'JUL', 'AUG',
                                             'SEP', 'OCT', 'NOV', 'DEC'],
@@ -142,7 +142,19 @@ def send_gesture_plot_info():
                                     'max':17000,
                                     'id':'Gesture_0_5'}]
                       } 
-    gestures_with_all_trials = [one_chart_info, one_chart_info, one_chart_info]
+    one_chart_info_1 = one_chart_info.copy()
+    one_chart_info_1['name'] = 'Gesture_1'
+    
+    one_chart_info_2 = one_chart_info.copy()
+    one_chart_info_2['name'] = 'Gesture_2'
+    
+    one_chart_info_3 = one_chart_info.copy()
+    one_chart_info_3['name'] = 'Gesture_3'
+    
+    one_chart_info_4 = one_chart_info.copy()
+    one_chart_info_4['name'] = 'Gesture_4'
+    
+    gestures_with_all_trials = [one_chart_info, one_chart_info_1, one_chart_info_2, one_chart_info_3, one_chart_info_4]
     return jsonify(gestures_with_all_trials=gestures_with_all_trials)
 
 
