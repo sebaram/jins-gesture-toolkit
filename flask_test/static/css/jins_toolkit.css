@@ -1,5 +1,5 @@
 body {
-    max-width: 1080px;
+/*    max-width: 1080px;*/
     margin: 0 auto !important;
     float: none !important;
 
@@ -8,6 +8,7 @@ body {
 
 .forms {
     width: 80%;
+    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -45,4 +46,13 @@ body {
 
 .full-contatiner{
     max-width: 1800px;
+}
+
+.plot_charts{
+    width: 100%;
+    padding: 0 150px 0 60px;
+}
+.card-plot{
+    min-width: 400px;
+    min-height: 250px;
 }

@@ -52,17 +52,17 @@
         
         function add_one_chart_list(name, trials){
             var append_str = '\
-<div class="container">\
+<div>\
     <h3>'+name+'</h3>\
     <div id="'+name+'"class="row flex-nowrap horizontal-scroll full-contatiner plot_div">\
 ';
             for( one_trial of trials) {
                 append_str += '\
-        <div class="col-4">\
-            <div class="card card-block" >\
+        <div class="flex-column">\
+            <div class="card card-block card-plot" >\
                 <div class="card-body">\
                     <h5 class="card-title">'+one_trial.id+'</h5>\
-                    <canvas id="'+name+one_trial.id+'" ></canvas>\
+                    <canvas id="'+name+one_trial.id+'" style="height:400; width:400" ></canvas>\
                 </div>\
             </div>\
         </div>';
@@ -179,7 +179,7 @@
         </form>
     </div>
     
-    <div id="plot_charts" class="container plot_charts">
+    <div id="plot_charts" class="plot_charts">
     </div>
 
  
