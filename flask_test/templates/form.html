@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jins_toolkit.css') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">z
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
     <script>
@@ -28,9 +29,41 @@
 
                     $('#input_number_of_gesture').val(data.trial_numbers);
                     $('.valueSpan').html(data.trial_numbers);
+            
+                    $('input[name="time-before-length"]').val(parseFloat(data.time_before*10)/10);
+                    $('input[name="time-window-length"]').val(parseFloat(data.time_recording*10)/10);
 
                 });
         });
+        
+        
+        $(document).ready(function(){
+            var d_value = 0.1;
+            const target_input = $('input[name="time-before-length"]');
+            $('button[name="time-before-minus-btn"]').click(function(){
+                target_input.val( Math.max(0.5, Math.round((parseFloat(target_input.val()) - d_value)*10 )/10));
+            });
+            $('button[name="time-before-plus-btn"]').click(function(){
+                target_input.val( Math.round((parseFloat(target_input.val()) + d_value)*10 )/10);
+            });
+            
+            
+         });
+        
+        $(document).ready(function(){
+            var d_value = 0.1;
+            const target_input = $('input[name="time-window-length"]');
+            $('button[name="time-window-minus-btn"]').click(function(){
+                target_input.val( Math.max(0.5, Math.round((parseFloat(target_input.val()) - d_value)*10 )/10));
+            });
+            $('button[name="time-window-plus-btn"]').click(function(){
+                target_input.val( Math.round((parseFloat(target_input.val()) + d_value)*10 )/10);
+            });
+            
+            
+         });
+        
+        
 
     </script>
 </head>
@@ -49,39 +82,84 @@
                 <a class="nav-item nav-link" href="review_data">Data Review</a>
                 <a class="nav-item nav-link" href="training">Training</a>
                 <a class="nav-item nav-link  " href="online_test">Online Testing</a>
-<!--                <a class="nav-item nav-link disabled" href="#">Disabled</a>-->
+                <!--                <a class="nav-item nav-link disabled" href="#">Disabled</a>-->
             </div>
         </div>
     </nav>
 
 
-<!--
+    <!--
     <div class="jumbotron text-center data-collection">
         <h1>Jins Gesture Toolkit</h1>
         <h2>-Data collection mode-</h2>
     </div>
 -->
     <div class="forms centerContainer">
-        <form action="" method="POST">
-            <div class="form-group">
+        <form  action="" method="POST">
+            <div  class="form-group">
                 <label for="participant_name" class="font-weight-bold">1. Name:</label>
                 <input type="text" class="form-control" id="participant_name" name="input_name" aria-describedby="name_help" placeholder="PX" required>
             </div>
-            <div class="form-group">
-                <label for="target_gesture_set" class="font-weight-bold">2. Target Gestures</label>
+            <div  class="form-group">
+                <label for="input_gesture_set" class="font-weight-bold">2. Target Gestures</label>
                 <textarea rows="3" class="form-control" name="input_gesture_set">Nothing,Left Flick,Left Push,Right Flick,Right Push,Rubbing</textarea>
                 <small id="gesture_set_help" class="form-text text-muted">-seperate each name with ","(comma) <br>-type less than 5 gestures at once</small>
             </div>
             <div class="form-group ">
-                <label for="target_gesture_set" class="font-weight-bold">3. Select number of trials for each gesture</label>
+                <label for="input_number_of_gesture" class="font-weight-bold">3. Select number of trials for each gesture</label>
                 <br>
                 <input type="range" class="custom-range slider-trials" name="input_number_of_gesture" id="input_number_of_gesture" min="0" max="20" value="10" required>
                 <span class="font-weight-bold text-primary ml-2 number-span valueSpan">0</span>
             </div>
-            <button type="submit" name="action" value="startGathering" class="btn btn-primary btn-lg">Start Gathering</button>
+            <div class="form-group ">
+                <label for="time_length" class="font-weight-bold">4. Select time length(sec) before/during gesture performing</label>
+                <br>
+
+                <div class="container">
+                    <div class="row">
+
+                        <div class="card col-sm-6 ">
+                            <div class="card-body">
+                                <p class="card-text text-center">Time before gesture(sec)</p>
+
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-dark btn-sm" name="time-before-minus-btn" id="minus-btn"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                    <input type="number" name="time-before-length"class="text-center form-control form-control-sm" value="1.0" step="0.1" min="0.1">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-dark btn-sm" name="time-before-plus-btn"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card col-sm-6 ">
+                            <div class="card-body">
+                                <p class="card-text text-center">Window Size(sec)</p>
+                                
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-dark btn-sm" name="time-window-minus-btn"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                    <input type="number" name="time-window-length" class="text-center form-control form-control-sm" value="1.5" step="0.1" min="0.1">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-dark btn-sm" name="time-window-plus-btn"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            <button action="" method="POST" type="submit" name="action" value="startGathering" class="btn btn-primary btn-lg">Start Gathering</button>
 
             <div class="border-top my-3"></div>
-            
+
         </form>
     </div>
 

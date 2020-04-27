@@ -88,7 +88,11 @@ def info_to_html():
     print("<<stuff>>\nname:",participant_name,
           "\ntarget_gestures:",target_gestures,
           "\nnumber_of_trials:",number_of_trials)
-    return jsonify(participant_name=participant_name, trial_numbers=number_of_trials, target_gestures=",".join(target_gestures))
+    return jsonify(participant_name=participant_name,
+                   trial_numbers=number_of_trials,
+                   target_gestures=",".join(target_gestures),
+                   time_before=time_before,
+                   time_recording=time_recording)
 
 @app.route('/_gestureplot', methods= ['GET','POST'])
 def send_gesture_plot_info():
@@ -201,9 +205,19 @@ def init_data_gathering():
         target_gestures = [x.strip() for x in request.form["input_gesture_set"].split(',')]
         
         number_of_trials = int(request.form['input_number_of_gesture'])
-        print("<<init_data_gathering>>\nname:",participant_name,
+        
+        time_before = float(request.form['time-before-length'])
+        time_recording = float(request.form['time-window-length'])
+        print("\n<<init_data_gathering>>\nname:",participant_name,
               "\ntarget_gestures:",target_gestures,
-              "\nnumber_of_trials:",number_of_trials)
+              "\nnumber_of_trials:",number_of_trials,
+              "\ntime_before:",time_before,
+              "\ntime_recording:",time_recording,
+              "\n\n")
+        
+        # if not 'action' in request.form:
+        #     return render_template('form.html', name=participant_name)
+        
         
         if request.form['action'] == 'startGathering':
             if not pygame_is_running:
@@ -218,16 +232,34 @@ def init_data_gathering():
 def review_data():
     global save_folder
     
+    error = None
     exp_list = refreshtrainingDataList(save_folder)
+    seg_list = refresh_segDataList(save_folder)
     
     if request.method == 'POST':
             
-        if request.form['action'] == 'startReview':
-            print("===startReview")
-            selected_exp = request.form.get("target_data_selection")
-            selected_segment_method = request.form.get("target_data_selection")
+        if request.form['action'] == 'runSeg':
             
-    return render_template('review_data.html', available_exp=exp_list)
+            selected_exp = request.form.get("target_data_selection")
+            selected_segment_method = request.form.get("segment_type")
+            
+            print("===startReview")
+            print("selected_exp: ",selected_exp)
+            print("selected_segment_method: ",selected_segment_method)
+            
+            trial_schedule_df = pd.read_pickle(os.path.join(save_folder,selected_exp+".pickle"))
+            jins_data_df = pd.read_pickle(os.path.join(save_folder,selected_exp+"_JINS.pickle"))
+            new_df = putIMUinDF(trial_schedule_df, jins_data_df)
+            if len(new_df)==0:
+                error = selected_exp
+            else:
+                new_df.to_pickle(os.path.join(save_folder,selected_exp+"_segmented.pickle"))
+                time.sleep(2)
+            
+    return render_template('review_data.html',
+                           available_exp=exp_list,
+                           available_seg=seg_list,
+                           error=error)
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():
@@ -254,7 +286,11 @@ def refreshtrainingDataList(save_folder):
     
     exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.pickle"))]
     return reversed(exps_has_jins)
-            
+def refresh_segDataList(save_folder):
+    all_pickles = [f for f in os.listdir(save_folder) if 'segmented.pickle' in f]
+    
+    return reversed(all_pickles)
+                        
 def putIMUinDF(data_df, imu_df, post_fix=""):
     new_df = data_df.copy()
     for i in range(len(new_df)):
