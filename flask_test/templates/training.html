@@ -40,14 +40,204 @@
         
         <div class="form-group">
             <label for="target_data_selection" class="font-weight-bold test">2. Choose pre-processing technique:</label>
+            <br>
             
+            
+            <p class="font-italic">-Filters</p>
+            <div class="row">
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">Lowpass Filter</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">Bandpass Filter</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">Highpass Filter</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            
+            <p class="font-italic">-Other technique</p>
+            <div class="row">
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="movavgCheckbox" value="option1">
+                        <label class="form-check-label" for="movavgCheckbox">Moving Average</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
         </div>
         
         
+        <div class="form-group">
+            <label for="target_data_selection" class="font-weight-bold test">3. Choose model to Train/Test:</label>
+            <br>
+            
+            
+            <div class="row">
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_rdf_Checkbox" value="model_rdf" checked>
+                        <label class="form-check-label" for="model_rdf_Checkbox">Random Decision Forest</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_svm">
+                        <label class="form-check-label" for="model_svm_Checkbox">Linear Support Vector Machine</label>
+                    </div>
+                </div>
+                
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_rbf">
+                        <label class="form-check-label" for="model_svm_Checkbox">RBF Support Vector Machine</label>
+                    </div>
+                </div>
+
+
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_mlp_Checkbox" value="model_mlp">
+                        <label class="form-check-label" for="model_mlp_Checkbox">Multi-layer Perceptron classifier</label>
+                    </div>
+                </div>
+                
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_dtw_Checkbox" value="model_dtw">
+                        <label class="form-check-label" for="model_mlp_Checkbox">Dynamic time warping</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            
+            <hr>
+        </div>
         
         
-        <button  name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
+        <div class="form-group">
+            <label for="target_data_selection" class="font-weight-bold test">4.Choose input for model:</label>
+            <br>
+            
+            <p class="font-italic">-Raw data</p>
+            <div class="row">
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">Lowpass Filter</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">Bandpass Filter</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">Highpass Filter</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            
+            
+            <p class="font-italic">-Statistical Features</p>
+            <div class="row">
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_rdf_Checkbox" value="model_rdf" checked>
+                        <label class="form-check-label" for="model_rdf_Checkbox">Random Decision Forest</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_svm">
+                        <label class="form-check-label" for="model_svm_Checkbox">Linear Support Vector Machine</label>
+                    </div>
+                </div>
+                
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_rbf">
+                        <label class="form-check-label" for="model_svm_Checkbox">RBF Support Vector Machine</label>
+                    </div>
+                </div>
+
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_mlp_Checkbox" value="model_mlp">
+                        <label class="form-check-label" for="model_mlp_Checkbox">Multi-layer Perceptron classifier</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            
+            
+            <p class="font-italic">-Other Features</p>
+            <div class="row">
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_rdf_Checkbox" value="model_rdf" checked>
+                        <label class="form-check-label" for="model_rdf_Checkbox">Random Decision Forest</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_svm">
+                        <label class="form-check-label" for="model_svm_Checkbox">Linear Support Vector Machine</label>
+                    </div>
+                </div>
+                
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_rbf">
+                        <label class="form-check-label" for="model_svm_Checkbox">RBF Support Vector Machine</label>
+                    </div>
+                </div>
+
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline radio">
+                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_mlp_Checkbox" value="model_mlp">
+                        <label class="form-check-label" for="model_mlp_Checkbox">Multi-layer Perceptron classifier</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+        </div>
+        
+        <span >Number of Selected Features: NN  </span>
+        <button name="action" value="startReview" class="float-right btn btn-primary btn-lg">Start Training</button>
+
     </div>
+    
+    <hr class="w-50">
+    <hr class="w-50">
+    <div class="forms centerContainer">
+        <p>Results: sss</p>
+    </div>
+    
     
 
 
