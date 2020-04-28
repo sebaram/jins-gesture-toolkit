@@ -137,21 +137,39 @@
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
-                        <label class="form-check-label" for="lowpassCheckbox">Lowpass Filter</label>
+                        <label class="form-check-label" for="lowpassCheckbox">EOG</label>
                     </div>
                 </div>
 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
-                        <label class="form-check-label" for="bandpassCheckbox">Bandpass Filter</label>
+                        <label class="form-check-label" for="bandpassCheckbox">ACC</label>
                     </div>
                 </div>
 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
-                        <label class="form-check-label" for="highpassCheckbox">Highpass Filter</label>
+                        <label class="form-check-label" for="highpassCheckbox">GYRO</label>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            
+            <p class="font-italic">-FFT</p>
+            <div class="row">
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">FFT</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">Diff.</label>
                     </div>
                 </div>
             </div>
@@ -161,65 +179,66 @@
             <p class="font-italic">-Statistical Features</p>
             <div class="row">
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_rdf_Checkbox" value="model_rdf" checked>
-                        <label class="form-check-label" for="model_rdf_Checkbox">Random Decision Forest</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">Mean.</label>
                     </div>
                 </div>
 
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_svm">
-                        <label class="form-check-label" for="model_svm_Checkbox">Linear Support Vector Machine</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">Std.</label>
+                    </div>
+                </div>
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">Max</label>
                     </div>
                 </div>
                 
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_rbf">
-                        <label class="form-check-label" for="model_svm_Checkbox">RBF Support Vector Machine</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">Min</label>
                     </div>
                 </div>
-
-
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_mlp_Checkbox" value="model_mlp">
-                        <label class="form-check-label" for="model_mlp_Checkbox">Multi-layer Perceptron classifier</label>
-                    </div>
-                </div>
+                                
             </div>
             <hr>
+            
             
             
             <p class="font-italic">-Other Features</p>
             <div class="row">
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_rdf_Checkbox" value="model_rdf" checked>
-                        <label class="form-check-label" for="model_rdf_Checkbox">Random Decision Forest</label>
-                    </div>
-                </div>
-
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_svm">
-                        <label class="form-check-label" for="model_svm_Checkbox">Linear Support Vector Machine</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">Correlation Coefficient</label>
                     </div>
                 </div>
                 
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_svm_Checkbox" value="model_rbf">
-                        <label class="form-check-label" for="model_svm_Checkbox">RBF Support Vector Machine</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">Peaks</label>
                     </div>
                 </div>
-
+                
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">ECDF</label>
+                    </div>
+                </div>
+                
 
                 <div class="card col-sm-3">
-                    <div class="form-check form-check-inline radio">
-                        <input class="form-check-input" type="radio" name="model_select_radio" id="model_mlp_Checkbox" value="model_mlp">
-                        <label class="form-check-label" for="model_mlp_Checkbox">Multi-layer Perceptron classifier</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">?</label>
                     </div>
                 </div>
             </div>
