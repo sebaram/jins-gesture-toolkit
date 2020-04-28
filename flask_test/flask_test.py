@@ -96,14 +96,17 @@ def info_to_html():
 
 @app.route('/_gestureplot', methods= ['GET','POST'])
 def send_gesture_plot_info():
+    global selected_seg_data
     print("===startReview")
     # selected_exp = request.form.get("target_data_selection")
     # selected_segment_method = request.form.get("target_data_selection")
     # print("selected_exp: "+selected_exp)
     # print("selected_segment_method: "+selected_segment_method)
+    if request.method == 'POST':
+        selected_seg_data = request.form['selected_seg_data']
                 
     
-    segmented_df = pd.read_pickle(os.path.join(save_folder,"2020-04-28 10_03_39_P0_EXP1_segmented.pickle"))
+    segmented_df = pd.read_pickle(os.path.join(save_folder, selected_seg_data))
     all_trials_list = segdf_to_chartdict(segmented_df)
     return jsonify(all_trials=all_trials_list)
 
@@ -164,13 +167,16 @@ def review_data():
             
             trial_schedule_df = pd.read_pickle(os.path.join(save_folder,selected_exp+".pickle"))
             jins_data_df = pd.read_pickle(os.path.join(save_folder,selected_exp+"_JINS.pickle"))
-            new_df = putIMUinDF(trial_schedule_df, jins_data_df)
-            if len(new_df)==0:
-                error = selected_exp
+            if 'Basic' in selected_segment_method :
+                new_df = putIMUinDF(trial_schedule_df, jins_data_df)
+                if len(new_df)==0:
+                    error = selected_exp
+                else:
+                    new_df.to_pickle(os.path.join(save_folder,selected_exp+"_segmented.pickle"))
+                    time.sleep(2)
             else:
-                new_df.to_pickle(os.path.join(save_folder,selected_exp+"_segmented.pickle"))
-                time.sleep(2)
-            
+                error = "Does not support this segment method: {}".format(selected_segment_method)
+                
     return render_template('review_data.html',
                            available_exp=exp_list,
                            available_seg=seg_list,

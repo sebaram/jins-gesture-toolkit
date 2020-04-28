@@ -5,11 +5,23 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jins_toolkit.css') }}">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
-<!--    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>-->
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
     
     <script>
-        $(document).ready(function update_charts() {
+//        $(document).ready(function () {
+//            update_charts();
+//     
+//        });
+        
+        function reviewData(){
+            console.log($('#target_seg_selection').find(":selected").text());
+            $.post("/_gestureplot", {"selected_seg_data": $('#target_seg_selection').find(":selected").text()});
+            
+            update_charts();
+            
+        }
+        
+        function update_charts() {
             $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
             $.getJSON($SCRIPT_ROOT + "/_gestureplot",
                 function(data) {
@@ -23,7 +35,7 @@
                         document.getElementById(one_gesture.name).addEventListener("mousewheel", horizontal_wheel);
                     }
                 });
-        });
+        }
         
         
         
@@ -51,7 +63,7 @@
         
         
         function add_one_chart_list(name, trials){
-            var append_str = '\
+            var append_str = '<br><br>\
 <div>\
     <h3>'+name+'</h3>\
     <div id="'+name+'"class="row flex-nowrap horizontal-scroll plot_div">\
@@ -255,14 +267,14 @@
 
         </form>
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold test">1. Select segmented data to review:</label>
-            <select type="text" class="form-control" id="target_data_selection" name="target_data_selection">
+            <label for="target_seg_selection" class="font-weight-bold test">1. Select segmented data to review:</label>
+            <select type="text" class="form-control" id="target_seg_selection" name="target_seg_selection">
                 {% for one_seg in available_seg %}
                 <option value="{{one_seg}}" SELECTED>{{one_seg}}</option>"
                 {% endfor %}
             </select>
         </div>
-        <button  name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
+        <button onclick="reviewData()" name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
     </div>
     
     
