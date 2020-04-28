@@ -26,6 +26,29 @@
         </div>
     </nav>
     
+    <div class="forms centerContainer">
+        
+        <div class="form-group">
+            <label for="target_data_selection" class="font-weight-bold test">1. Select segmented data to Train/Test:</label>
+            <select type="text" class="form-control" id="target_data_selection" name="target_data_selection">
+                {% for one_seg in available_seg %}
+                <option value="{{one_seg}}" SELECTED>{{one_seg}}</option>"
+                {% endfor %}
+            </select>
+        </div>
+        
+        
+        <div class="form-group">
+            <label for="target_data_selection" class="font-weight-bold test">2. Choose pre-processing technique:</label>
+            
+        </div>
+        
+        
+        
+        
+        <button  name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
+    </div>
+    
 
 
 </body>
