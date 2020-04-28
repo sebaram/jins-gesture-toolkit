@@ -320,6 +320,8 @@ def putTrialinIMU(data_df, imu_df, name=""):
     
     return new_imu_df
 
+
+
 def segdf_to_chartdict(segmented_df):
     all_charts_info = []
     for one_gesture in segmented_df.TargetName.unique():
@@ -334,8 +336,8 @@ def segdf_to_chartdict(segmented_df):
             DATA = one_row.DATA
             
             sensor_vals = dict()
-            # for one_sensor in ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V', 'GYRO_X', 'GYRO_Y', 'GYRO_Z', 'ACC_X', 'ACC_Y', 'ACC_Z']:
-            for one_sensor in ['EOG_H', 'EOG_V']:
+            for one_sensor in ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V', 'GYRO_X', 'GYRO_Y', 'GYRO_Z', 'ACC_X', 'ACC_Y', 'ACC_Z']:
+            # for one_sensor in ['EOG_H', 'EOG_V']:
                 sensor_vals[one_sensor] = list(DATA[one_sensor])
                 
             row_dict = {'tick_label': list(DATA['EpochTime']),

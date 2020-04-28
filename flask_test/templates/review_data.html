@@ -62,7 +62,11 @@
             <div class="card card-block card-plot" >\
                 <div class="card-body">\
                     <h5 class="card-title">'+one_trial.id+'</h5>\
-                    <canvas id="'+name+one_trial.id+'" style="height:400; width:400" ></canvas>\
+                    <canvas id="'+name+one_trial.id+'_acc" style="height:600; width:600" ></canvas>\
+                    <br>\
+                    <canvas id="'+name+one_trial.id+'_gyro" style="height:600; width:600" ></canvas>\
+                    <br>\
+                    <canvas id="'+name+one_trial.id+'" style="height:600; width:600" ></canvas>\
                 </div>\
             </div>\
         </div>';
@@ -72,53 +76,73 @@
 
             $(append_str ).appendTo( "#plot_charts" );  
         }
-        
+        const LINE_COLOR = {'EOG_L': "#C00000", 
+                              'EOG_R': "#0000C0", 
+                              'EOG_H': "#C000C0", 
+                              'EOG_V': "#00C0C0", 
+
+                              'GYRO_X': "#ED553B", 
+                              'GYRO_Y': "#F6D55C", 
+                              'GYRO_Z': "#3CAEA3", 
+
+                              'ACC_X': "#ED553B", 
+                              'ACC_Y': "#F6D55C", 
+                              'ACC_Z': "#3CAEA3"};
+        const MIN_MAX = {   'ACC': [-36000, 36000],
+                            'GYRO':[-36000, 36000],
+                            'EOG': [-1200, 1200] };
         function plot_one_gesture_charts(name, trials){
             var one_trial = trials[0]
             
             for (one_trial of trials){
         
-                var dataset_ = [];
+                var dataset_ = {'ACC':[],
+                               'GYRO':[],
+                               'EOG':[],};
+                
                 for (var key_ in one_trial.sensor_vals){
-                    dataset_.push({
-                        fillColor: "rgba(255,255,255,0)",
-//                      strokeColor: "rgba(151,187,205,1)",
-//                      pointColor: "rgba(151,187,205,1)",
-//                      pointStrokeColor: "#fff",
-//                      pointHighlightFill: "#fff",
-//                      pointHighlightStroke: "rgba(151,187,205,1)",
+                    var this_part = "";
+                    if(key_.includes('ACC')){
+                        this_part = 'ACC';
+                    }else if(key_.includes('GYRO')){
+                        this_part = 'GYRO';
+                    }else if(key_.includes('EOG')){
+                        this_part = 'EOG';
+                    }else{
+                        continue;
+                    }
+                        
+                    dataset_[this_part].push({
+                        fill: false,
+                        pointRadius: 0,
+                        borderColor: LINE_COLOR[key_],
                         bezierCurve : false,
                         label: key_,
                         data : one_trial.sensor_vals[key_],
+                        
                         });
                     
                 }
-                var barData = {
+                var accData = {
                     labels : one_trial.tick_label,
-                    datasets :dataset_
+                    datasets :dataset_['ACC']
                 }
-                
-
-                Chart.defaults.global.animationSteps = 10;
-                Chart.defaults.global.tooltipYPadding = 16;
-                Chart.defaults.global.tooltipCornerRadius = 0;
-                Chart.defaults.global.tooltipTitleFontStyle = "normal";
-                Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
-                Chart.defaults.global.animationEasing = "easeOutBounce";
-                Chart.defaults.global.responsive = false;
-                Chart.defaults.global.scaleLineColor = "black";
-                Chart.defaults.global.scaleFontSize = 16;
-
-                // get bar chart canvas
-//                var mychart = document.getElementById(name+one_trial.id).getContext("2d");
+                var gyroData = {
+                    labels : one_trial.tick_label,
+                    datasets :dataset_['GYRO']
+                }
+                var eogData = {
+                    labels : one_trial.tick_label,
+                    datasets :dataset_['EOG']
+                }
 
                 var steps = 10;
-                var max = one_trial.max;
+
                 // draw bar chart
 
-                new Chart(document.getElementById(name+one_trial.id), {
+                new Chart(document.getElementById(name+one_trial.id+'_acc'), {
                                                                         type: 'line',
-                                                                        data: barData,
+                                                                        data: accData,
                                                                         options: {
                                                                                     scales: {
                                                                                             xAxes: [{
@@ -126,22 +150,51 @@
                                                                                             }],
                                                                                             yAxes: [{
                                                                                                     display: false
-                                                                                            }],
+                                                                                            },{ticks : {
+                                                                                                max : MIN_MAX['ACC'][1],    
+                                                                                                min : MIN_MAX['ACC'][0]
+                                                                                            }}],
                                                                                     },
                                                                         }
 
                 });
-//                var LineChartDemo = new Chart(mychart).Line(barData, {
-//                                                                        scaleOverride: true,
-//                                                                        scaleSteps: steps,
-//                                                                        scaleStepWidth: Math.ceil(max / steps),
-//                                                                        scaleStartValue: 0,
-//                                                                        scaleShowVerticalLines: true,
-//                                                                        scaleShowGridLines : true,
-//                                                                        barShowStroke : true,
-//                                                                        scaleShowLabels: true,
-//                                                                        bezierCurve: false,
-//                                                                        });
+                new Chart(document.getElementById(name+one_trial.id+'_gyro'), {
+                                                                        type: 'line',
+                                                                        data: gyroData,
+                                                                        options: {
+                                                                                    scales: {
+                                                                                            xAxes: [{
+                                                                                                    display: false
+                                                                                            }],
+                                                                                            yAxes: [{
+                                                                                                    display: false
+                                                                                            },{ticks : {
+                                                                                                max : MIN_MAX['GYRO'][1],    
+                                                                                                min : MIN_MAX['GYRO'][0]
+                                                                                            }}],
+                                                                                    },
+                                                                        }
+
+                });
+                new Chart(document.getElementById(name+one_trial.id), {
+                                                                        type: 'line',
+                                                                        data: eogData,
+                                                                        options: {
+                                                                                    scales: {
+                                                                                            xAxes: [{
+                                                                                                    display: false
+                                                                                            }],
+                                                                                            yAxes: [{
+                                                                                                    display: false
+                                                                                            },{ticks : {
+                                                                                                max : MIN_MAX['EOG'][1],    
+                                                                                                min : MIN_MAX['EOG'][0]
+                                                                                            }}],
+                                                                                    },
+                                                                        }
+
+                });
+
                 
             }
         }
