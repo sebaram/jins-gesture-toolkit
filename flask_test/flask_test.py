@@ -39,7 +39,7 @@ pygame_is_running = False
 participant_name = "P0" # put name of participant
 number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
-target_gestures = ["Eye Movement", "Blink"]
+target_gestures = ["Face touch", "null"]
 
 
 enable_experiment = True # set False for just testing classifier
@@ -51,7 +51,7 @@ save_plot_figure = True
 experiment_mode = 1 #1: auto time count, 2:wait till succeed
 
 time_before = 2     #for all experiment mode. sec before start recording after press key
-time_recording = 3 # only for experiment mode 1
+time_recording = 2 # only for experiment mode 1
 
 showFPS = False
 
@@ -190,7 +190,10 @@ def send_gesture_plot_info():
     one_chart_info_4['name'] = 'Gesture_4'
     
     gestures_with_all_trials = [one_chart_info, one_chart_info_1, one_chart_info_2, one_chart_info_3, one_chart_info_4]
-    return jsonify(gestures_with_all_trials=gestures_with_all_trials)
+    
+    segmented_df = pd.read_pickle(os.path.join(save_folder,"2020-04-28 10_03_39_P0_EXP1_segmented.pickle"))
+    all_trials_list = segdf_to_chartdict(segmented_df)
+    return jsonify(all_trials=all_trials_list)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -316,6 +319,38 @@ def putTrialinIMU(data_df, imu_df, name=""):
         new_imu_df.at[new_imu_df.loc[(new_imu_df.EpochTime>start_t) & (new_imu_df.EpochTime<end_t)].index, cols] = list(this_row)
     
     return new_imu_df
+
+def segdf_to_chartdict(segmented_df):
+    all_charts_info = []
+    for one_gesture in segmented_df.TargetName.unique():
+        
+    
+        this_gesture_df = segmented_df.loc[segmented_df.TargetName==one_gesture]
+        if one_gesture == 'EndPoint' and this_gesture_df.iloc[0].TrialNum<0:
+            continue
+        
+        trials = []
+        for i,one_row in this_gesture_df.iterrows():
+            DATA = one_row.DATA
+            
+            sensor_vals = dict()
+            # for one_sensor in ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V', 'GYRO_X', 'GYRO_Y', 'GYRO_Z', 'ACC_X', 'ACC_Y', 'ACC_Z']:
+            for one_sensor in ['EOG_H', 'EOG_V']:
+                sensor_vals[one_sensor] = list(DATA[one_sensor])
+                
+            row_dict = {'tick_label': list(DATA['EpochTime']),
+                        'sensor_vals': sensor_vals,
+                        'id': one_row.TrialNum}
+            trials.append(row_dict)
+            
+        one_chart_info = {'name': one_gesture,
+                          'trials': trials}
+        
+        all_charts_info.append(one_chart_info)
+        
+    return all_charts_info 
+
+
     
 def makeoneDollarTrainingSet(f_name):
     data_df = pd.read_pickle(f_name)

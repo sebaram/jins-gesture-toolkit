@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jins_toolkit.css') }}">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+<!--    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>-->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
     
     <script>
         $(document).ready(function update_charts() {
@@ -16,7 +17,7 @@
                     while( el.hasChildNodes() ){
                         el.removeChild(el.lastChild);
                     }
-                    for (one_gesture of data.gestures_with_all_trials){
+                    for (one_gesture of data.all_trials){
                         add_one_chart_list(one_gesture.name, one_gesture.trials);
                         plot_one_gesture_charts(one_gesture.name, one_gesture.trials);
                         document.getElementById(one_gesture.name).addEventListener("mousewheel", horizontal_wheel);
@@ -80,20 +81,25 @@
                 var dataset_ = [];
                 for (var key_ in one_trial.sensor_vals){
                     dataset_.push({
-                      fillColor: "rgba(255,255,255,0)",
+                        fillColor: "rgba(255,255,255,0)",
 //                      strokeColor: "rgba(151,187,205,1)",
 //                      pointColor: "rgba(151,187,205,1)",
 //                      pointStrokeColor: "#fff",
 //                      pointHighlightFill: "#fff",
 //                      pointHighlightStroke: "rgba(151,187,205,1)",
-                      bezierCurve : false,
-                      data : one_trial.sensor_vals[key_]});
+                        bezierCurve : false,
+                        label: key_,
+                        data : one_trial.sensor_vals[key_],
+                        });
+                    
                 }
                 var barData = {
                     labels : one_trial.tick_label,
                     datasets :dataset_
                 }
-                Chart.defaults.global.animationSteps = 50;
+                
+
+                Chart.defaults.global.animationSteps = 10;
                 Chart.defaults.global.tooltipYPadding = 16;
                 Chart.defaults.global.tooltipCornerRadius = 0;
                 Chart.defaults.global.tooltipTitleFontStyle = "normal";
@@ -104,22 +110,38 @@
                 Chart.defaults.global.scaleFontSize = 16;
 
                 // get bar chart canvas
-                var mychart = document.getElementById(name+one_trial.id).getContext("2d");
+//                var mychart = document.getElementById(name+one_trial.id).getContext("2d");
 
                 var steps = 10;
                 var max = one_trial.max;
                 // draw bar chart
-                var LineChartDemo = new Chart(mychart).Line(barData, {
-                                                                        scaleOverride: true,
-                                                                        scaleSteps: steps,
-                                                                        scaleStepWidth: Math.ceil(max / steps),
-                                                                        scaleStartValue: 0,
-                                                                        scaleShowVerticalLines: true,
-                                                                        scaleShowGridLines : true,
-                                                                        barShowStroke : true,
-                                                                        scaleShowLabels: true,
-                                                                        bezierCurve: false,
-                                                                        });
+
+                new Chart(document.getElementById(name+one_trial.id), {
+                                                                        type: 'line',
+                                                                        data: barData,
+                                                                        options: {
+                                                                                    scales: {
+                                                                                            xAxes: [{
+                                                                                                    display: false
+                                                                                            }],
+                                                                                            yAxes: [{
+                                                                                                    display: false
+                                                                                            }],
+                                                                                    },
+                                                                        }
+
+                });
+//                var LineChartDemo = new Chart(mychart).Line(barData, {
+//                                                                        scaleOverride: true,
+//                                                                        scaleSteps: steps,
+//                                                                        scaleStepWidth: Math.ceil(max / steps),
+//                                                                        scaleStartValue: 0,
+//                                                                        scaleShowVerticalLines: true,
+//                                                                        scaleShowGridLines : true,
+//                                                                        barShowStroke : true,
+//                                                                        scaleShowLabels: true,
+//                                                                        bezierCurve: false,
+//                                                                        });
                 
             }
         }
