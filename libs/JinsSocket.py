@@ -14,7 +14,7 @@ else:
     from io import StringIO
 
 class JinsSocket(threading.Thread):
-    def __init__(self, isUDP = False, Port = 12562, w_size=2000):
+    def __init__(self, isUDP = False, Port = 12562, w_size=2000, save_name="test", save_online=True):
         threading.Thread.__init__(self)
         
         # set your default ip&port  
@@ -54,6 +54,11 @@ class JinsSocket(threading.Thread):
         self.counter = 0
         self.last_act_t = 0
         
+        """Online Saving"""
+        self.save_online = save_online
+        if self.save_online:
+            self.online_save_file = open(save_name+"_JINS.csv","w") 
+            self.online_save_file.write(",EpochTime,EOG_L,EOG_R,EOG_H,EOG_V,GYRO_X,GYRO_Y,GYRO_Z,ACC_X,ACC_Y,ACC_Z\n")
         
         
         """moving average"""
@@ -87,23 +92,23 @@ class JinsSocket(threading.Thread):
         if self.isUDP:
             try:
                 self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                self.serverSocket.bind((self.IP, self.Port))
+                self.serverSocket.bind(('', self.Port))
             except:   
                 self.serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                self.serverSocket.bind((self.IP, self.Port))
+                self.serverSocket.bind(('', self.Port))
 #==============================================================================
 #         [TCP]setting the socket comunication
 #==============================================================================
         else:
             try:
                 self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.client.connect((self.IP, self.Port))
+                self.client.connect(('', self.Port))
             except:
                 self.client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.client.connect((self.IP, self.Port))
+                self.client.connect(('', self.Port))
    
     def run(self):
         while True:
@@ -149,6 +154,7 @@ class JinsSocket(threading.Thread):
                                          'ACC_Y': values[4],
                                          'ACC_Z': values[5]}
                             self.addFULLbyDict(vals_dict)
+                    
                         
     def __del__(self):
         self.close()
@@ -163,7 +169,8 @@ class JinsSocket(threading.Thread):
             self.serverSocket.close()
         else:
             self.client.close()
-        print("Jins Socket closed")
+        print(">>>>Jins Socket closed")
+
 
     """ Full Mode """
     def addFULL(self, full_values):
@@ -191,7 +198,11 @@ class JinsSocket(threading.Thread):
         self.AccZ = np.roll(self.AccZ,-1)
         self.AccZ[-1] = full_values[2]
         
+        if self.save_online:
+            self.online_save_file.write(self.getLast_str()+"\n")
+            
         self.updateMovingAverage()
+            
     def addFULLbyDict(self, full_dict):
             
             
@@ -217,7 +228,11 @@ class JinsSocket(threading.Thread):
         self.AccZ = np.roll(self.AccZ,-1)
         self.AccZ[-1] = full_dict['ACC_Z']
         
+        if self.save_online:
+            self.online_save_file.write(self.getLast_str()+"\n")
+            
         self.updateMovingAverage()
+        
         
 #        self.TIME = np.append(self.GyroZ,full_values[8])
 #        
@@ -294,6 +309,13 @@ class JinsSocket(threading.Thread):
         
     def getLast(self,size):
         return self.TIME[-size:], self.EogL[-size:],self.EogR[-size:], self.GyroX[-size:],self.GyroY[-size:],self.GyroZ[-size:]
+    def getLast_str(self):
+        str_ = ",{},{},{},{},{},{},{},{},{},{},{}".format(self.TIME[-1],                                                          
+                                                          self.EogL[-1], self.EogR[-1],
+                                                          (self.EogL[-1]-self.EogR[-1]), (self.EogL[-1]+self.EogR[-1])/2,
+                                                          self.GyroX[-1], self.GyroY[-1], self.GyroZ[-1],
+                                                          self.AccX[-1], self.AccY[-1], self.AccZ[-1])
+        return str_
 
     def getLast_dict(self, size, delta_value=False):
         if delta_value:
@@ -529,3 +551,21 @@ def addMovingAverage(jins_df,num=100):
 def CumulativeAverage( cur_average, last_value):
     return (100*cur_average + last_value)/(100+1)
 
+
+
+if __name__ == "__main__":
+
+    """Thread 1: DATA COLLECTION """
+    jins_client = JinsSocket(isUDP=True, Port=12562, w_size=3000, save_name="testing")
+    jins_client.setConnection()
+    jins_client.start()
+    
+    dt = 1
+    last_t = 0
+    while True:
+        print(jins_client.getLast_str()) 
+        
+        time.sleep(dt)
+        
+    
+    jins_client.close()

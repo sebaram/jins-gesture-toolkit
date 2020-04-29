@@ -166,7 +166,7 @@ def review_data():
             print("selected_segment_method: ",selected_segment_method)
             
             trial_schedule_df = pd.read_pickle(os.path.join(save_folder,selected_exp+".pickle"))
-            jins_data_df = pd.read_pickle(os.path.join(save_folder,selected_exp+"_JINS.pickle"))
+            jins_data_df = pd.read_csv(os.path.join(save_folder,selected_exp+"_JINS.csv"))
             if 'Basic' in selected_segment_method :
                 new_df = putIMUinDF(trial_schedule_df, jins_data_df)
                 if len(new_df)==0:
@@ -182,15 +182,20 @@ def review_data():
                            available_seg=seg_list,
                            error=error)
 
-@app.route('/online_test', methods=['GET', 'POST'])
-def online_test():
-
-    return render_template('online_test.html')
-
 @app.route('/training', methods=['GET', 'POST'])
 def training():
+    global save_folder
+    
+    seg_list = refresh_segDataList(save_folder)
+    return render_template('training.html',available_seg=seg_list)
 
-    return render_template('training.html')
+
+@app.route('/online_test', methods=['GET', 'POST'])
+def online_test():
+    
+    return render_template('online_test.html')
+
+
 
 
 #########################################
@@ -386,8 +391,10 @@ def runPygame(participant_name, trial_numbers, target_gestures,
 
     tick_value = 1000/dt
     
+    save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name++"_EXP%d"%(experiment_mode)
+    
     """Thread 1: DATA COLLECTION """
-    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size)
+    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
     jins_client.setConnection()
     jins_client.start()
 
@@ -486,22 +493,23 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         clock.tick(tick_value)
         
     # Close everything down
+    jins_client.close()
     pygame.quit()
     pygame_is_running = False
-    jins_client.close()
+    # jins_client.close()
     
     
     if save_result and enable_experiment:
         
         try:
-            save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name
+            
         
-            exp1.trialDF.to_csv(save_name_str+"_EXP%d.csv"%(experiment_mode))
-            exp1.trialDF.to_pickle(save_name_str+"_EXP%d.pickle"%(experiment_mode))
+            exp1.trialDF.to_csv(save_name_str+".csv"%(experiment_mode))
+            exp1.trialDF.to_pickle(save_name_str+".pickle"%(experiment_mode))
         
-            jins_df = jins_client.saveasPickle(save_name_str+"_EXP%d"%(experiment_mode))
-            new_jinsDF = JinsSocket.addMovingAverage(jins_df)
-            new_jinsDF.to_pickle('%s_JINS.pickle'%(save_name_str+"_EXP%d"%(experiment_mode)))
+            # jins_df = jins_client.saveasPickle(save_name_str+"_EXP%d"%(experiment_mode))
+            # new_jinsDF = JinsSocket.addMovingAverage(jins_df)
+            # new_jinsDF.to_pickle('%s_JINS.pickle'%(save_name_str+"_EXP%d"%(experiment_mode)))
         
         
             # new_df = putIMUinDF(exp1.trialDF, new_jinsDF)
@@ -512,7 +520,6 @@ def runPygame(participant_name, trial_numbers, target_gestures,
 #            new_imu_df.to_csv(save_name_str+"_EXP%d.csv"%(experiment_mode))
 #            new_imu_df.to_pickle(save_name_str+"_EXP%d.pickle"%(experiment_mode))
             print("Result saved")
-            myWindow.refreshtrainingDatacomboBox()
         except:
             print("Error on combining EXP/JINS data")
             
