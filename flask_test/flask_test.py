@@ -344,7 +344,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
               width=1920, height=1080, full_screen = False,
               background = (200,200,200, 255),
               dt = 10):
-    global pygame_is_running, myWindow
+    global pygame_is_running
     pygame_is_running = True
     targetType = dict()
     for i, name in enumerate(target_gestures):
@@ -499,7 +499,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     # jins_client.close()
     
     
-    if save_result and enable_experiment:
+    if save_result and enable_experiment and len(exp1.trialDF)>0:
         
         try:
             
