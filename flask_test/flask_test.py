@@ -394,7 +394,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name++"_EXP%d"%(experiment_mode)
     
     """Thread 1: DATA COLLECTION """
-    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
+    # jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
+    jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
     jins_client.setConnection()
     jins_client.start()
 
