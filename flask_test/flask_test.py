@@ -214,7 +214,7 @@ def refreshtrainingDataList(save_folder):
     all_pickles = [f for f in os.listdir(save_folder) if '.pickle' in f]
     exp_names = [f.split(".")[0] for f in all_pickles if 'EXP1.pickle' in f]
     
-    exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.pickle"))]
+    exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.csv"))]
     return reversed(exps_has_jins)
 def refresh_segDataList(save_folder):
     all_pickles = [f for f in os.listdir(save_folder) if 'segmented.pickle' in f]
