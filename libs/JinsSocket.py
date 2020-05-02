@@ -75,7 +75,8 @@ class JinsSocket(threading.Thread):
         self.AccY_average = 0
         self.AccZ_average = 0
         
-        
+        offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
+        self.timezone_diff = (offset / 60 / 60 * -1)
         
     def setLocalIP(self):
         self.IP = socket.gethostbyname(socket.gethostname())
@@ -207,7 +208,7 @@ class JinsSocket(threading.Thread):
             
             
         self.TIME = np.roll(self.TIME,-1)
-        self.TIME[-1] = convertJinsDATEtoEpoch(full_dict['DATE'])
+        self.TIME[-1] = convertJinsDATEtoEpoch(full_dict['DATE'], self.timezone_diff)
         
         self.EogL = np.roll(self.EogL,-1)
         self.EogL[-1] = full_dict['EOG_L']
@@ -455,7 +456,7 @@ def loadJinsCSVnocomment(file):
     
     return df
     
-def convertJinsDATEtoEpoch(date, time_zone_diff=9,multiply=1000):
+def convertJinsDATEtoEpoch(date, time_zone_diff=9, multiply=1000):
     if type(date) == int:
         return date
     
@@ -475,10 +476,11 @@ def convertJinsDATEtoEpoch(date, time_zone_diff=9,multiply=1000):
 def convertJinsDATEtoEpoch_forAPPLY(df):
     return convertJinsDATEtoEpoch(df['DATE'])
 
-def addEpochonJinsDF(jins_df, time_zone_diff=9):
+def addEpochonJinsDF(jins_df, time_zone_diff=9, multiply=1000):
     out_df = jins_df.copy()
     out_df['EpochTime']=-1
-    out_df['EpochTime'] = out_df.apply(convertJinsDATEtoEpoch_forAPPLY, axis=1)
+    # out_df['EpochTime'] = out_df.apply(convertJinsDATEtoEpoch_forAPPLY,args=[time_zone_diff, multiply], axis=1)
+    out_df['EpochTime'] = out_df.apply(lambda x: convertJinsDATEtoEpoch(x['DATE'],time_zone_diff, multiply), axis=1)
     
 #    dates = out_df['DATE']
 #    for i in range(len(out_df)):
