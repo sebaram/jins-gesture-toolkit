@@ -509,8 +509,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         try:
             
         
-            exp1.trialDF.to_csv(save_name_str+".csv"%(experiment_mode))
-            exp1.trialDF.to_pickle(save_name_str+".pickle"%(experiment_mode))
+            exp1.trialDF.to_csv(save_name_str+".csv")
+            exp1.trialDF.to_pickle(save_name_str+".pickle")
         
             # jins_df = jins_client.saveasPickle(save_name_str+"_EXP%d"%(experiment_mode))
             # new_jinsDF = JinsSocket.addMovingAverage(jins_df)
