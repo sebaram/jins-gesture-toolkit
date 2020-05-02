@@ -39,7 +39,11 @@ pygame_is_running = False
 participant_name = "P0" # put name of participant
 number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
-target_gestures = ["Face touch", "null"]
+# target_gestures = ["Face touch", "null"]
+target_gestures = ['nose right', 'nose left',
+                   'left eye', 'right eye',
+                   'mouth left', 'mouth right',
+                   'null']
 
 
 enable_experiment = True # set False for just testing classifier
@@ -391,7 +395,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
 
     tick_value = 1000/dt
     
-    save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name++"_EXP%d"%(experiment_mode)
+    save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name+"_EXP%d"%(experiment_mode)
     
     """Thread 1: DATA COLLECTION """
     # jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
@@ -537,6 +541,5 @@ if __name__ == '__main__':
 
 
     url = "http://127.0.0.1:5000"
-
-    # threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
     app.run()
