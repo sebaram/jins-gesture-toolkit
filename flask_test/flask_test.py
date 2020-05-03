@@ -23,6 +23,8 @@ import numpy as np
 import pandas as pd
 import pickle
 
+import inspect
+
 
 # import custom
 sys.path.append("../libs")
@@ -30,6 +32,7 @@ import JinsSocket
 import NoseTools as NoseTools
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
+import methods_feature
 
 
 
@@ -191,7 +194,11 @@ def training():
     global save_folder
     
     seg_list = refresh_segDataList(save_folder)
-    return render_template('training.html',available_seg=seg_list)
+    
+    features_list = [a[0] for a in inspect.getmembers(methods_feature, inspect.isfunction)]
+    return render_template('training.html',
+                           available_seg=seg_list,
+                           available_features=features_list)
 
 
 @app.route('/online_test', methods=['GET', 'POST'])
@@ -541,5 +548,5 @@ if __name__ == '__main__':
 
 
     url = "http://127.0.0.1:5000"
-    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    # threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
     app.run()

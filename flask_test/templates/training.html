@@ -29,7 +29,7 @@
     <div class="forms centerContainer">
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold test">1. Select segmented data to Train/Test:</label>
+            <label for="target_data_selection" class="font-weight-bold h3">1. Select segmented data to Train/Test:</label>
             <select type="text" class="form-control" id="target_data_selection" name="target_data_selection">
                 {% for one_seg in available_seg %}
                 <option value="{{one_seg}}" SELECTED>{{one_seg}}</option>"
@@ -39,7 +39,7 @@
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold test">2. Choose pre-processing technique:</label>
+            <label for="target_data_selection" class="font-weight-bold h3">2. Choose pre-processing technique:</label>
             <br>
             
             
@@ -65,10 +65,18 @@
                         <label class="form-check-label" for="highpassCheckbox">Highpass Filter</label>
                     </div>
                 </div>
+                
+                <div class="card col-sm-4">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="movavgCheckbox" value="option1">
+                        <label class="form-check-label" for="movavgCheckbox">Moving Average</label>
+                    </div>
+                </div>
             </div>
             <hr>
             
-            <p class="font-italic">-Other technique</p>
+<!--
+            <p class="font-italic">-Resampling</p>
             <div class="row">
                 <div class="card col-sm-4">
                     <div class="form-check form-check-inline">
@@ -78,11 +86,12 @@
                 </div>
             </div>
             <hr>
+-->
         </div>
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold test">3. Choose model to Train/Test:</label>
+            <label for="target_data_selection" class="font-weight-bold h3">3. Choose model to Train/Test:</label>
             <br>
             
             
@@ -129,10 +138,10 @@
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold test">4.Choose input for model:</label>
+            <label for="target_data_selection" class="font-weight-bold h3">4.Choose input for model:</label>
             <br>
             
-            <p class="font-italic">-Raw data</p>
+            <p class="font-italic h4">-Raw data input</p>
             <div class="row">
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
@@ -140,7 +149,58 @@
                         <label class="form-check-label" for="lowpassCheckbox">EOG</label>
                     </div>
                 </div>
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">EOG(FFT)</label>
+                    </div>
+                </div>
 
+                
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
+                        <label class="form-check-label" for="bandpassCheckbox">ACC</label>
+                    </div>
+                </div>
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">ACC(FFT)</label>
+                    </div>
+                </div>
+                    
+
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
+                        <label class="form-check-label" for="highpassCheckbox">GYRO</label>
+                    </div>
+                </div>
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">GYRO(FFT)</label>
+                    </div>
+                </div>
+                
+                
+            </div>
+            <hr>
+            
+            
+            
+            <p class="font-italic h4">-Single Axis Features</p>
+            
+            <p class="font-italic h6">>Target Axis</p>
+            <div class="row">
+                <div class="card col-sm-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
+                        <label class="form-check-label" for="lowpassCheckbox">EOG</label>
+                    </div>
+                </div>
+            
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
@@ -154,86 +214,28 @@
                         <label class="form-check-label" for="highpassCheckbox">GYRO</label>
                     </div>
                 </div>
+       
             </div>
-            <hr>
             
-            <p class="font-italic">-FFT</p>
+            <p class="font-italic h6">>Features</p>
             <div class="row">
+                {% for one_feature in available_features %}
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
-                        <label class="form-check-label" for="lowpassCheckbox">FFT</label>
+                        <input class="form-check-input" type="checkbox" id="{{one_feature}}Checkbox" value="option1">
+                        <label class="form-check-label" for="{{one_feature}}Checkbox">{{one_feature}}</label>
                     </div>
                 </div>
-
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
-                        <label class="form-check-label" for="bandpassCheckbox">Diff.</label>
-                    </div>
-                </div>
-            </div>
-            <hr>
-            
-            
-            <p class="font-italic">-Statistical Features</p>
-            <div class="row">
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
-                        <label class="form-check-label" for="lowpassCheckbox">Mean.</label>
-                    </div>
-                </div>
-
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
-                        <label class="form-check-label" for="bandpassCheckbox">Std.</label>
-                    </div>
-                </div>
-
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
-                        <label class="form-check-label" for="highpassCheckbox">Max</label>
-                    </div>
-                </div>
-                
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
-                        <label class="form-check-label" for="highpassCheckbox">Min</label>
-                    </div>
-                </div>
-                                
+                {% endfor %}
             </div>
             <hr>
             
             
             
-            <p class="font-italic">-Other Features</p>
+            <p class="font-italic h4">-Multi-axis Features</p>
             <div class="row">
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="lowpassCheckbox" value="option1">
-                        <label class="form-check-label" for="lowpassCheckbox">Correlation Coefficient</label>
-                    </div>
-                </div>
-                
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="bandpassCheckbox" value="option1">
-                        <label class="form-check-label" for="bandpassCheckbox">Peaks</label>
-                    </div>
-                </div>
-                
-                <div class="card col-sm-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
-                        <label class="form-check-label" for="highpassCheckbox">ECDF</label>
-                    </div>
-                </div>
-                
+                    
+
 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
