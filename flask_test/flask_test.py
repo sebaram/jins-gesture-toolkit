@@ -32,7 +32,7 @@ import JinsSocket
 import NoseTools as NoseTools
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
-import methods_feature
+import methods_filter, methods_feature, methods_model
 
 
 
@@ -195,9 +195,14 @@ def training():
     
     seg_list = refresh_segDataList(save_folder)
     
+    filter_list = [a[0] for a in inspect.getmembers(methods_filter, inspect.isfunction)]
+    models_list = [a[0] for a in inspect.getmembers(methods_model, inspect.isclass) if 'methods_model' in str(a[1])]
     features_list = [a[0] for a in inspect.getmembers(methods_feature, inspect.isfunction)]
+
     return render_template('training.html',
                            available_seg=seg_list,
+                           available_filter = filter_list,
+                           available_model = models_list,
                            available_features=features_list)
 
 
