@@ -5,6 +5,70 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jins_toolkit.css') }}">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
+    <script>
+        function send_trainInfo(){
+            console.log($('#target_data_selection').find(":selected").text());
+            
+            var checked_filter = get_all_checked('filter_checkbox');
+            console.log(checked_filter);
+            
+            var checked_model = get_all_checked('model_radio');
+            console.log(checked_model);
+            
+            var checked_raw_data_input = get_all_checked('rawCheckbox');
+            console.log(checked_raw_data_input);
+            
+            var checked_target_axis = get_all_checked('targetaxisCheckbox');
+            console.log(checked_target_axis);
+            var checked_features = get_all_checked('single_feature_checkbox');
+            console.log(checked_features);
+            
+            
+            var sending_data = {"selected_train_data": $('#target_data_selection').find(":selected").text(),
+                                   "checked_filter": checked_filter,
+                                   
+                                   "checked_model": checked_model,
+                                   "checked_raw_data_input": checked_raw_data_input,
+                                   
+                                   "checked_target_axis": checked_target_axis,
+                                   "checked_features": checked_features};
+            $.post("/_traintest", sending_data);
+            
+            setTimeout(get_train_result,2000)
+
+//            get_train_result();
+
+        }
+        
+        function get_all_checked(el_name){
+            var checkboxes = document.getElementsByName(el_name);
+            var checkboxesChecked = [];
+            var checkboxesChecked_str = ""
+            // loop over them all
+            for (var i=0; i<checkboxes.length; i++) {
+                // And stick the checked ones onto an array...
+                if (checkboxes[i].checked) {
+                    checkboxesChecked.push(checkboxes[i].value);
+                    if(checkboxesChecked_str!=""){
+                        checkboxesChecked_str += ",";
+                    }
+                    checkboxesChecked_str += checkboxes[i].value;
+                }
+            }
+            return checkboxesChecked_str;
+        }
+        function get_train_result(){
+            $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
+            $.getJSON($SCRIPT_ROOT + "/_refreshresult",
+                function(data) {
+                    console.log("get result:"+ data.result);
+                    var obj = $("#result_str").text(data.result);
+                    obj.html(obj.html().replace(/\n/g,'<br/>'));
+                });
+        }
+    
+    
+    </script>
 
 </head>
 
@@ -39,7 +103,7 @@
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold h3">2. Choose pre-processing technique:</label>
+            <label  class="font-weight-bold h3">2. Choose pre-processing technique:</label>
             <br>
             
             
@@ -48,7 +112,7 @@
                 {% for one_filter in available_filter %}
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="{{one_filter}}Checkbox" value="option1" checked='True'>
+                        <input class="form-check-input" type="checkbox" name="filter_checkbox" id="{{one_filter}}Checkbox" value="{{one_filter}}" >
                         <label class="form-check-label" for="{{one_filter}}Checkbox">{{one_filter}}</label>
                     </div>
                 </div>
@@ -72,7 +136,7 @@
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold h3">3. Choose model to Train/Test:</label>
+            <label class="font-weight-bold h3">3. Choose model to Train/Test:</label>
             <br>
             
             
@@ -80,7 +144,11 @@
                 {% for one_model in available_model %}
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="model_radio" id="{{one_model}}Checkbox" value="option1">
+                        {% if one_model == "RDFclassifier" %}
+                        <input class="form-check-input" type="radio" name="model_radio" id="{{one_model}}Checkbox" value="{{one_model}}" checked="checked" >
+                        {% else %}
+                        <input class="form-check-input" type="radio" name="model_radio" id="{{one_model}}Checkbox" value="{{one_model}}">
+                        {% endif %}
                         <label class="form-check-label" for="{{one_model}}Checkbox">{{one_model}}</label>
                     </div>
                 </div>
@@ -103,20 +171,20 @@
         
         
         <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold h3">4.Choose input for model:</label>
+            <label class="font-weight-bold h3">4.Choose input for model:</label>
             <br>
             
             <p class="font-italic h4">-Raw data input</p>
             <div class="row">
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_eog_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_eog_Checkbox" value="EOG">
                         <label class="form-check-label" for="input_eog_Checkbox">EOG</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_eogFFT_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_eogFFT_Checkbox" value="EOG_fft" checked="True">
                         <label class="form-check-label" for="input_eogFFT_Checkbox">EOG(FFT)</label>
                     </div>
                 </div>
@@ -124,13 +192,13 @@
                 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_acc_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_acc_Checkbox" value="ACC">
                         <label class="form-check-label" for="input_acc_Checkbox">ACC</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_accFFT_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_accFFT_Checkbox" value="ACC_fft">
                         <label class="form-check-label" for="input_accFFT_Checkbox">ACC(FFT)</label>
                     </div>
                 </div>
@@ -138,13 +206,13 @@
 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_gyro_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_gyro_Checkbox" value="GYRO">
                         <label class="form-check-label" for="input_gyro_Checkbox">GYRO</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="input_gyroFFT_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="rawCheckbox" id="input_gyroFFT_Checkbox" value="GYRO_fft">
                         <label class="form-check-label" for="input_gyroFFT_Checkbox">GYRO(FFT)</label>
                     </div>
                 </div>
@@ -161,40 +229,40 @@
             <div class="row">
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_eog_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox" id="feature_target_eog_Checkbox" checked='True' value="EOG">
                         <label class="form-check-label" for="feature_target_eog_Checkbox">EOG</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_eogdiff_Checkbox" value="option1">
-                        <label class="form-check-label" for="feature_target_eog_Checkbox">EOG(diff)</label>
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox"  id="feature_target_eogdiff_Checkbox" checked='True' value="EOG_diff">
+                        <label class="form-check-label" for="feature_target_eogdiff_Checkbox">EOG(diff)</label>
                     </div>
                 </div>
             
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_acc_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox"  id="feature_target_acc_Checkbox" checked='True' value="ACC">
                         <label class="form-check-label" for="feature_target_acc_Checkbox">ACC</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_accdiff_Checkbox" value="option1">
-                        <label class="form-check-label" for="feature_target_acc_Checkbox">ACC(diff)</label>
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox"  id="feature_target_accdiff_Checkbox" checked='True' value="ACC_diff">
+                        <label class="form-check-label" for="feature_target_accdiff_Checkbox">ACC(diff)</label>
                     </div>
                 </div>
 
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_gyro_Checkbox" value="option1">
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox"  id="feature_target_gyro_Checkbox" value="GYRO">
                         <label class="form-check-label" for="feature_target_gyro_Checkbox">GYRO</label>
                     </div>
                 </div>
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="feature_target_gyrodiff_Checkbox" value="option1">
-                        <label class="form-check-label" for="feature_target_gyro_Checkbox">GYRO(diff)</label>
+                        <input class="form-check-input" type="checkbox" name="targetaxisCheckbox"  id="feature_target_gyrodiff_Checkbox" value="GYRO_diff">
+                        <label class="form-check-label" for="feature_target_gyrodiff_Checkbox">GYRO(diff)</label>
                     </div>
                 </div>
        
@@ -205,7 +273,7 @@
                 {% for one_feature in available_features %}
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="{{one_feature}}Checkbox" value="option1" checked='True'>
+                        <input class="form-check-input" type="checkbox" name="single_feature_checkbox" id="{{one_feature}}Checkbox" value="{{one_feature}}" checked='True'>
                         <label class="form-check-label" for="{{one_feature}}Checkbox">{{one_feature}}</label>
                     </div>
                 </div>
@@ -216,10 +284,9 @@
             
             
             <p class="font-italic h4">-Multi-axis Features</p>
+            <p  class="font-italic">in progress...</p>
+<!--
             <div class="row">
-                    
-
-
                 <div class="card col-sm-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="highpassCheckbox" value="option1">
@@ -227,19 +294,22 @@
                     </div>
                 </div>
             </div>
+-->
             <hr>
         </div>
         
         
-        <button name="action" value="startReview" class="btn btn-primary btn-lg">Start Training</button>
-        <span>Number of Selected Features: NN  </span>
+        <button  onclick="send_trainInfo()" name="action" value="startTraining" class="btn btn-primary btn-lg">Start Training</button>
+<!--        <span>Number of Selected Features: NN  </span>-->
 
     </div>
     
     <hr class="w-50">
     <hr class="w-50">
     <div class="forms centerContainer">
-        <p>Results: sss</p>
+        <button  onclick="get_train_result()" name="action" value="refreshResult" class="btn btn-primary btn-lg">Refresh Result</button>
+        <p class="h4">Results: </p>
+        <span id="result_str">1<br>2...</span>
     </div>
     
     

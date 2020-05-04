@@ -21,9 +21,12 @@ import os, sys
 
 import numpy as np
 import pandas as pd
+from scipy import signal
+
 import pickle
 
 import inspect
+
 
 
 # import custom
@@ -101,6 +104,8 @@ def info_to_html():
                    time_before=time_before,
                    time_recording=time_recording)
 
+
+
 @app.route('/_gestureplot', methods= ['GET','POST'])
 def send_gesture_plot_info():
     global selected_seg_data
@@ -117,20 +122,38 @@ def send_gesture_plot_info():
     all_trials_list = segdf_to_chartdict(segmented_df)
     return jsonify(all_trials=all_trials_list)
 
+
+result_str = "Press 'Start Training' button to get result"
 @app.route('/_traintest', methods= ['GET','POST'])
 def train_test_gestures():
-    global selected_seg_data
-    print("===startReview")
-
-    if request.method == 'POST':
-        selected_seg_data = request.form['selected_seg_data']
-                
+    global save_folder, result_str
     
-    segmented_df = pd.read_pickle(os.path.join(save_folder, selected_seg_data))
-    all_trials_list = segdf_to_chartdict(segmented_df)
-    return jsonify(all_trials=all_trials_list)
+    
+    if request.method == 'POST':
+        selected_train_data = pd.read_pickle(os.path.join(save_folder,request.form['selected_train_data']))
+        
+        TARGET_FILTER = split_remove_empty(request.form['checked_filter'])
+        TARGET_MODEL = request.form['checked_model']
+        TARGET_RAW_AXIS = split_remove_empty(request.form['checked_raw_data_input']) 
+        TARGET_FEATURE_AXIS = split_remove_empty(request.form['checked_target_axis'])
+        TARGET_FEATURES = split_remove_empty(request.form['checked_features']) 
+        result_str = "training.... please wait"
+        result_str = get_train_result(selected_train_data, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES)
+        
+        # print(TARGET_FILTER)
+        # print(TARGET_MODEL)
+        # print(TARGET_RAW_AXIS)
+        # print(TARGET_FEATURE_AXIS)
+        # print(TARGET_FEATURES)
+        # return jsonify(result=result_str)
 
+    return jsonify(result=result_str)
 
+@app.route('/_refreshresult', methods= ['GET','POST'])
+def resfresh_train_results():
+    global result_str
+
+    return jsonify(result=result_str)
 @app.route('/', methods=['GET', 'POST'])
 def init_data_gathering():
     global participant_name, target_gestures, number_of_trials, pygame_is_running, enable_experiment, isTraining, save_result
@@ -193,7 +216,7 @@ def review_data():
                     error = selected_exp
                 else:
                     new_df.to_pickle(os.path.join(save_folder,selected_exp+"_segmented.pickle"))
-                    time.sleep(2)
+                    seg_list = refresh_segDataList(save_folder)
             else:
                 error = "Does not support this segment method: {}".format(selected_segment_method)
                 
@@ -231,7 +254,12 @@ def online_test():
 ########### Functions [start] ###########
 current_milli_time = lambda: int(round(time.time() * 1000))
 current_milli_time_f = lambda: float(time.time() * 1000)
-
+def split_remove_empty(str_, sep=','):
+    list_ = str_.split(sep)
+    
+    if '' in list_:
+        list_.remove('')
+    return list_
 def checkFolder(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -247,12 +275,12 @@ def refresh_segDataList(save_folder):
     return reversed(all_pickles)
                         
 def putIMUinDF(data_df, imu_df, post_fix=""):
-    new_df = data_df.copy()
-    for i in range(len(new_df)):
-        start_t = new_df.loc[i]['StartTime']
-        end_t = new_df.loc[i]['CurrentTime']
+    new_df = data_df.loc[data_df.Target>0].copy()
+    for i,row in new_df.iterrows():
+        start_t = row['StartTime']
+        end_t = row['CurrentTime']
         
-        this_trial_imu_df = imu_df.loc[(imu_df.EpochTime>start_t) & (imu_df.EpochTime<end_t)]
+        this_trial_imu_df = imu_df.loc[(start_t<imu_df.EpochTime) & (imu_df.EpochTime<end_t)]
         new_df.at[i, 'DATA%s'%post_fix] = this_trial_imu_df
         
     return new_df
@@ -263,10 +291,9 @@ def putTrialinIMU(data_df, imu_df, name=""):
     for col in cols:
         new_imu_df[col] = np.nan
     
-    for i in range(len(data_df)):
-        this_row = data_df.loc[i][cols]
-        start_t = data_df.loc[i]['StartTime']
-        end_t = data_df.loc[i]['CurrentTime']
+    for i, this_row in data_df.iterrows():
+        start_t = this_row['StartTime']
+        end_t = this_row['CurrentTime']
         
         new_imu_df.at[new_imu_df.loc[(new_imu_df.EpochTime>start_t) & (new_imu_df.EpochTime<end_t)].index, cols] = list(this_row)
     
@@ -331,6 +358,77 @@ def makeoneDollarTrainingSet(f_name):
         pickle.dump(custom_training, handle, protocol=pickle.HIGHEST_PROTOCOL)    
         print("DONE: %s"%f_name)
 
+def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES):
+    test_sum = methods_feature.sumAllFeatures(TARGET_FEATURES)
+    
+    totalX = []
+    totaly = []
+    
+    AXIS_SET = {'EOG': ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V'],
+                'ACC':  ['ACC_X', 'ACC_Y', 'ACC_Z'],
+                'GYRO': ['GYRO_X', 'GYRO_Y', 'GYRO_Z']}
+    W_LENGTH = 50
+    
+    for i,row in target_df.iterrows():
+        if row.TrialNum <0:
+            continue
+        total_label = []
+        rowX = np.array([])
+        this_data = row.DATA.copy()
+        
+        
+        for one_axis_set in TARGET_RAW_AXIS:
+            if '_fft' in one_axis_set:
+                target_set = one_axis_set.replace('_fft','')
+                is_fft = True
+            else:
+                target_set = one_axis_set
+                is_fft = False
+            
+            for one_part in AXIS_SET[target_set]:
+                    tmp_raw = signal.resample(this_data[one_part].values, W_LENGTH)
+                    if is_fft:
+                        tmp_raw = np.abs(np.fft.fft(tmp_raw))
+                        post_fix = 'fft'
+                    else:
+                        post_fix = ''
+                    rowX = np.append(rowX, tmp_raw)
+                    total_label += [one_part+"{}_{:03d}".format(post_fix,i) for i in range(W_LENGTH)]
+                    
+            
+        for one_axis in TARGET_FEATURE_AXIS:
+            if 'diff' in one_axis:
+                target_set = one_axis.replace('_diff','')
+                is_diff = True
+            else:
+                target_set
+                is_diff = False
+                
+            for one_part in AXIS_SET[target_set]:
+                sig = this_data[one_part].values
+                if is_diff:
+                    sig = np.diff(sig)
+                
+                for one_filter in TARGET_FILTER:
+                    sig = getattr(methods_filter, one_filter)(sig)
+                
+                partX = test_sum.cal_features_from_one_signal(sig)
+            
+                rowX = np.append(rowX, partX)
+                total_label += [one_axis+"_"+one_name for one_name in test_sum.update_label()]
+                
+        totalX.append(list(rowX))
+        totaly.append(row.Target)
+        
+        
+    model = getattr(methods_model, TARGET_MODEL)()
+    results_ = model.get_confusion_matrix(totalX,totaly,cv=2)
+    
+    result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
+                    +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n"\
+                    +str(results_[1])
+    print(result_str)
+    return result_str
         
 """
 FUNCTIONS FOR KEY/MOUSE EVENT in PyGame
