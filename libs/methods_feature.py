@@ -4,10 +4,14 @@ Created on Sun May  3 11:21:03 2020
 
 @author: JY
 """
+import inspect
+from collections import Iterable
 
 import numpy as np
 import peakdetect
 import ECDFtools
+from scipy.stats import entropy
+
 
 def mean(sig):
     return np.mean(sig)
@@ -25,27 +29,32 @@ def fft_deviation(sig):
     fft_value = np.abs(np.fft.fft(sig))
     return fft_value.std()
     
-def entropy(sig):
+# def entropy2(sig):
+#     """ Computes entropy of label distribution. """
+#     sig_int = sig.astype(np.int64)
+#     n_labels = len(sig_int)
+    
+#     if n_labels < 2:
+#         return 0
+    
+#     # c = Counter(sig_int)
+#     counts = np.bincount(sig_int)
+#     probs = counts / n_labels
+#     n_classes = len(np.unique(sig_int))
+    
+#     if n_classes <= 1:
+#         return 0
+
+#     return entropy(probs, base=n_classes)
+def entropy_e(sig):
     """ Computes entropy of label distribution. """
+    # sig_int = sig.astype(np.int64)
     n_labels = len(sig)
     
-    if n_labels <= 1:
+    if n_labels < 2:
         return 0
-    
-    counts = np.bincount(sig)
-    probs = counts / n_labels
-    n_classes = np.count_nonzero(probs)
-    
-    if n_classes <= 1:
-        return 0
-    
-    ent = 0.
-    
-    # Compute standard entropy.
-    for i in probs:
-        ent -= i * np.log(i, base=n_classes)
-    
-    return ent    
+    p = sig/sig.sum(keepdims=True)
+    return  entropy(p)
 
 def ECDF_representation_1d( sig, n=15 ):
     X = []
@@ -190,24 +199,68 @@ def avgDistancePlusPeaks(sig, look_a=4, delta=1500):
     use GYRO_Z signal which is stable than EOG signal and precise enough to detect nose rubbing input
     """
     res = peakdetect.peakdetect(y_axis=sig, lookahead=look_a, delta=delta)
-    
-    plus_xs = np.array(res[0])[:,0]
-    mean_dx = np.average(np.diff(plus_xs))
-    
+
+    if len(res[0])>0:
+        plus_xs = np.array(res[0])[:,0]
+        mean_dx = np.average(np.diff(plus_xs))
+    else:
+        mean_dx = -999
     return  mean_dx
 
-def getRubingInfo(sig, look_a=4, delta=1500):
-    """
-    Out: Integer(total number of peaks), Float(average distance of plus peak)
+# def getRubingInfo(sig, look_a=4, delta=1500):
+#     """
+#     Out: Integer(total number of peaks), Float(average distance of plus peak)
     
-    Retrun total peak occurences and average time among peaks 
-    use GYRO_Z signal which is stable than EOG signal and precise enough to detect nose rubbing input
-    """
-    res = peakdetect.peakdetect(y_axis=sig, lookahead=look_a, delta=delta)
-    num_plus = len(res[0])
-    num_minus = len(res[1])
+#     Retrun total peak occurences and average time among peaks 
+#     use GYRO_Z signal which is stable than EOG signal and precise enough to detect nose rubbing input
+#     """
+#     res = peakdetect.peakdetect(y_axis=sig, lookahead=look_a, delta=delta)
+#     num_plus = len(res[0])
+#     num_minus = len(res[1])
     
-    plus_xs = np.array(res[0])[:,0]
-    mean_dx = np.average(np.diff(plus_xs))
     
-    return num_plus+num_minus, mean_dx
+#     plus_xs = np.array(res[0])[:,0]
+#     mean_dx = np.average(np.diff(plus_xs))
+    
+#     return num_plus+num_minus, mean_dx
+
+class sumAllFeatures:
+    def __init__(self, target_methods=[]):
+        self.target_methods = target_methods if len(target_methods)>0 else [a[0] for a in inspect.getmembers(sys.modules[__name__], inspect.isfunction) if not '__' in a[0]]
+        self.f_label = []
+    def cal_features_from_one_signal(self, sig):
+        featureX = np.array([])
+        for one_target in self.target_methods:
+            tmp_result = getattr(sys.modules[__name__], one_target)(sig)
+            featureX = np.append(featureX, tmp_result)
+        return featureX
+    def update_label(self):
+        f_label = []
+        sig = np.arange(100)
+        for one_target in self.target_methods:
+            tmp_result = getattr(sys.modules[__name__], one_target)(sig)
+            
+            if isinstance(tmp_result, Iterable):
+                for ii, k in enumerate(tmp_result):
+                    f_label.append("{}_{}".format(one_target, ii))
+            else:
+                # print(type(tmp_result))
+                f_label.append(one_target)
+        self.f_label = f_label
+        return f_label
+#%%
+import sys
+import matplotlib.pyplot as plt
+
+
+if __name__ == "__main__":
+    test_sum = sumAllFeatures()
+    sig = 1500*np.cos(np.arange(100)*0.2)
+    plt.plot(sig)
+    
+    features = test_sum.cal_features_from_one_signal(sig)
+    # test_sum.update_label()
+    labels = test_sum.update_label()
+    print("Total features num: {}".format(len(labels)))
+    print(labels)
+    
