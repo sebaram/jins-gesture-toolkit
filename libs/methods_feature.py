@@ -46,6 +46,8 @@ def fft_deviation(sig):
 #         return 0
 
 #     return entropy(probs, base=n_classes)
+    
+
 def entropy_e(sig):
     """ Computes entropy of label distribution. """
     # sig_int = sig.astype(np.int64)
@@ -54,7 +56,12 @@ def entropy_e(sig):
     if n_labels < 2:
         return 0
     p = sig/sig.sum(keepdims=True)
-    return  entropy(p)
+    res = entropy(p)
+    
+    if np.isinf(res):
+        return 0
+    else:
+        return  res
 
 def ECDF_representation_1d( sig, n=15 ):
     X = []
@@ -227,13 +234,16 @@ def avgDistancePlusPeaks(sig, look_a=4, delta=1500):
 class sumAllFeatures:
     def __init__(self, target_methods=[]):
         self.target_methods = target_methods if len(target_methods)>0 else [a[0] for a in inspect.getmembers(sys.modules[__name__], inspect.isfunction) if not '__' in a[0]]
+        if 'entropy' in self.target_methods:
+            self.target_methods.remove('entropy')
         self.f_label = []
     def cal_features_from_one_signal(self, sig):
-        featureX = np.array([])
+        featureX = np.array([],dtype=np.float32)
         for one_target in self.target_methods:
             tmp_result = getattr(sys.modules[__name__], one_target)(sig)
             featureX = np.append(featureX, tmp_result)
-        return featureX
+        featureX.astype(float) 
+        return np.nan_to_num(featureX)
     def update_label(self):
         f_label = []
         sig = np.arange(100)
@@ -255,6 +265,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     test_sum = sumAllFeatures()
+    print(test_sum.target_methods)
     sig = 1500*np.cos(np.arange(100)*0.2)
     plt.plot(sig)
     
