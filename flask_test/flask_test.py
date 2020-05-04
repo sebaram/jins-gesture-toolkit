@@ -117,6 +117,19 @@ def send_gesture_plot_info():
     all_trials_list = segdf_to_chartdict(segmented_df)
     return jsonify(all_trials=all_trials_list)
 
+@app.route('/_traintest', methods= ['GET','POST'])
+def train_test_gestures():
+    global selected_seg_data
+    print("===startReview")
+
+    if request.method == 'POST':
+        selected_seg_data = request.form['selected_seg_data']
+                
+    
+    segmented_df = pd.read_pickle(os.path.join(save_folder, selected_seg_data))
+    all_trials_list = segdf_to_chartdict(segmented_df)
+    return jsonify(all_trials=all_trials_list)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def init_data_gathering():
