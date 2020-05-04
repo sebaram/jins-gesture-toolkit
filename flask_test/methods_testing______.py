@@ -25,10 +25,10 @@ TARGET_FEATURES = ['ECDF_representation_1d', 'RMS', 'avgDistancePlusPeaks',
                    'minimum', 'sidePeakNum', 'sidebyPeak', 'sidebyValue',
                    'totPeakNum', 'variance']
 
-# TARGET_AXIS = ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V', 
-#                'GYRO_X', 'GYRO_Y', 'GYRO_Z',
-#                'ACC_X', 'ACC_Y', 'ACC_Z']
-TARGET_AXIS = ['EOG_L', 'EOG_R']
+TARGET_AXIS = ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V', 
+                'GYRO_X', 'GYRO_Y', 'GYRO_Z',
+                'ACC_X', 'ACC_Y', 'ACC_Z']
+# TARGET_AXIS = ['EOG_L', 'EOG_R']
 
 
 test_sum = methods_feature.sumAllFeatures(TARGET_FEATURES)
@@ -58,14 +58,6 @@ for i,row in df.iterrows():
     
 model = getattr(methods_model, TARGET_MODEL)()
 results_ = model.get_confusion_matrix(totalX,totaly,cv=2)
-print(results_)
-#%%
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.model_selection import cross_val_predict, cross_val_score
-from sklearn.metrics import confusion_matrix
 
-clf = RandomForestClassifier(n_estimators = 50)
-cross_result = cross_val_score(clf, totalX,totaly, cv=2)
-
-#%%
-totalX_arr = np.array(totalX)
+print("mean:{:.2f}%, std:{:.2f}%".format(results_[0].mean()*100, results_[0].std()*100))
+print(results_[1])
