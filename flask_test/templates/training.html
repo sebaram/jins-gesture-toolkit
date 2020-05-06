@@ -7,23 +7,12 @@
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
     <script>
         function send_trainInfo(){
-//            console.log($('#target_data_selection').find(":selected").text());
-            
             var checked_filter = get_all_checked('filter_checkbox');
-//            console.log(checked_filter);
-            
             var checked_model = get_all_checked('model_radio');
-//            console.log(checked_model);
-            
             var checked_raw_data_input = get_all_checked('rawCheckbox');
-//            console.log(checked_raw_data_input);
-            
             var checked_target_axis = get_all_checked('targetaxisCheckbox');
-//            console.log(checked_target_axis);
             var checked_features = get_all_checked('single_feature_checkbox');
-//            console.log(checked_features);
-            
-            
+
             var sending_data = {"selected_train_data": $('#target_data_selection').find(":selected").text(),
                                    "checked_filter": checked_filter,
                                    
@@ -32,13 +21,30 @@
                                    
                                    "checked_target_axis": checked_target_axis,
                                    "checked_features": checked_features};
-            $.post("/_traintest", sending_data);
             
+            $.post("/_traintest", sending_data);
             setTimeout(get_train_result,2000)
-
-//            get_train_result();
-
         }
+        function send_model_saveInfo(){
+            var checked_filter = get_all_checked('filter_checkbox');
+            var checked_model = get_all_checked('model_radio');
+            var checked_raw_data_input = get_all_checked('rawCheckbox');
+            var checked_target_axis = get_all_checked('targetaxisCheckbox');
+            var checked_features = get_all_checked('single_feature_checkbox');
+
+            var sending_data = {"selected_train_data": $('#target_data_selection').find(":selected").text(),
+                                   "checked_filter": checked_filter,
+                                   
+                                   "checked_model": checked_model,
+                                   "checked_raw_data_input": checked_raw_data_input,
+                                   
+                                   "checked_target_axis": checked_target_axis,
+                                   "checked_features": checked_features};
+            
+            $.post("/_savemodel", sending_data);
+            setTimeout(get_model_name,2000)
+        }
+        
         
         function get_all_checked(el_name){
             var checkboxes = document.getElementsByName(el_name);
@@ -59,14 +65,25 @@
         }
         function get_train_result(){
             $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
-            $.getJSON($SCRIPT_ROOT + "/_refreshresult",
+            $.getJSON($SCRIPT_ROOT + "/_traintest",
                 function(data) {
 //                    console.log("get result:"+ data.result);
                     var obj = $("#result_str").text(data.result);
                     obj.html(obj.html().replace(/\n/g,'<br/>'));
                 });
         }
-    
+        function get_model_name(){
+            $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
+            $.getJSON($SCRIPT_ROOT + "/_savemodel",
+                function(data) {
+//                    console.log("get result:"+ data.result);
+                    var obj = $("#result_str").text("Model saved:"+data.result);
+                    obj.html(obj.html().replace(/\n/g,'<br/>'));
+                });
+        }
+        
+        _getglobalvar
+
     
     </script>
 
@@ -300,6 +317,7 @@
         
         
         <button  onclick="send_trainInfo()" name="action" value="startTraining" class="btn btn-primary btn-lg">Start Training</button>
+        <button  onclick="send_model_saveInfo()" name="action" value="startTraining" class="btn btn-secondary btn-lg">Save Model</button>
 <!--        <span>Number of Selected Features: NN  </span>-->
 
     </div>
@@ -309,7 +327,7 @@
     <div class="forms centerContainer">
         <button  onclick="get_train_result()" name="action" value="refreshResult" class="btn btn-primary btn-lg">Refresh Result</button>
         <p class="h4">Results: </p>
-        <span id="result_str">1<br>2...</span>
+        <span id="result_str">nothing yet....</span>
     </div>
     
     

@@ -110,10 +110,6 @@ def info_to_html():
 def send_gesture_plot_info():
     global selected_seg_data
     print("===startReview")
-    # selected_exp = request.form.get("target_data_selection")
-    # selected_segment_method = request.form.get("target_data_selection")
-    # print("selected_exp: "+selected_exp)
-    # print("selected_segment_method: "+selected_segment_method)
     if request.method == 'POST':
         selected_seg_data = request.form['selected_seg_data']
                 
@@ -127,8 +123,7 @@ result_str = "Press 'Start Training' button to get result"
 @app.route('/_traintest', methods= ['GET','POST'])
 def train_test_gestures():
     global save_folder, result_str
-    
-    
+        
     if request.method == 'POST':
         selected_train_data = pd.read_pickle(os.path.join(save_folder,request.form['selected_train_data']))
         
@@ -138,22 +133,55 @@ def train_test_gestures():
         TARGET_FEATURE_AXIS = split_remove_empty(request.form['checked_target_axis'])
         TARGET_FEATURES = split_remove_empty(request.form['checked_features']) 
         result_str = "training.... please wait"
-        result_str = get_train_result(selected_train_data, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES)
         
-        # print(TARGET_FILTER)
-        # print(TARGET_MODEL)
-        # print(TARGET_RAW_AXIS)
-        # print(TARGET_FEATURE_AXIS)
-        # print(TARGET_FEATURES)
-        # return jsonify(result=result_str)
-
+        totalX, totaly, target_names_list = create_Xy_from_df(selected_train_data, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES)
+        # result_str = get_train_result(totalX, totaly, target_names_list, TARGET_MODEL)
+        
+        model = getattr(methods_model, TARGET_MODEL)()
+        results_ = model.get_confusion_matrix(totalX,totaly,cv=2,target_names_list=target_names_list)
+        result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
+                        +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n"\
+                        +str(target_names_list)+"\n"\
+                        +str(results_[1])+"\n\n\n"
+        
     return jsonify(result=result_str)
-
 @app.route('/_refreshresult', methods= ['GET','POST'])
 def resfresh_train_results():
     global result_str
 
     return jsonify(result=result_str)
+
+model_saved_name = "notyet saved"
+@app.route('/_savemodel', methods= ['GET','POST'])
+def save_trained_model():
+    global save_trained_folder, model_saved_name
+        
+    if request.method == 'POST':
+        selected_train_data = pd.read_pickle(os.path.join(save_folder,request.form['selected_train_data']))
+        
+        TARGET_FILTER = split_remove_empty(request.form['checked_filter'])
+        TARGET_MODEL = request.form['checked_model']
+        TARGET_RAW_AXIS = split_remove_empty(request.form['checked_raw_data_input']) 
+        TARGET_FEATURE_AXIS = split_remove_empty(request.form['checked_target_axis'])
+        TARGET_FEATURES = split_remove_empty(request.form['checked_features']) 
+        
+        totalX, totaly, target_names_list = create_Xy_from_df(selected_train_data, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES)
+        
+        
+        model = getattr(methods_model, TARGET_MODEL)()
+        model.train(totalX,totaly,target_names_list=target_names_list)
+        
+        f_name = os.path.join(save_trained_folder, datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_{}.joblib".format(model.__class__.__name__))
+        model.save_model(f_name)
+        model_saved_name = model.save_name
+        print("----saved:",model_saved_name)
+    return jsonify(result=model_saved_name)
+# @app.route('/_refreshresult', methods= ['GET','POST'])
+# def resfresh_train_results():
+#     global result_str
+
+#     return jsonify(result=result_str)
+
 @app.route('/', methods=['GET', 'POST'])
 def init_data_gathering():
     global participant_name, target_gestures, number_of_trials, pygame_is_running, enable_experiment, isTraining, save_result
@@ -244,8 +272,8 @@ def training():
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():
-    
-    return render_template('online_test.html')
+    model_list = refresh_modelList(save_trained_folder)
+    return render_template('online_test.html', available_model=model_list)
 
 
 
@@ -271,9 +299,10 @@ def refreshtrainingDataList(save_folder):
     return reversed(exps_has_jins)
 def refresh_segDataList(save_folder):
     all_pickles = [f for f in os.listdir(save_folder) if 'segmented.pickle' in f]
-    
     return reversed(all_pickles)
-                        
+def refresh_modelList(save_folder):
+    all_pickles = [f for f in os.listdir(save_folder) if '.joblib' in f]
+    return reversed(all_pickles)                        
 def putIMUinDF(data_df, imu_df, post_fix=""):
     new_df = data_df.loc[data_df.Target>0].copy()
     for i,row in new_df.iterrows():
@@ -357,8 +386,7 @@ def makeoneDollarTrainingSet(f_name):
     with open(f_name.replace("_wIMU.pickle", "_onedollarTrain.pickle"), 'wb') as handle:
         pickle.dump(custom_training, handle, protocol=pickle.HIGHEST_PROTOCOL)    
         print("DONE: %s"%f_name)
-
-def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES):
+def create_Xy_from_df(target_df, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES):
     test_sum = methods_feature.sumAllFeatures(TARGET_FEATURES)
     
     totalX = []
@@ -422,9 +450,13 @@ def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TAR
         totalX.append(list(rowX))
         totaly.append(row.Target)
         
-        
+    return totalX, totaly, target_names_list
+
+
+def get_train_result(totalX, totaly, target_names_list, TARGET_MODEL):
+    
     model = getattr(methods_model, TARGET_MODEL)()
-    results_ = model.get_confusion_matrix(totalX,totaly,cv=2)
+    results_ = model.get_confusion_matrix(totalX,totaly,cv=2,target_names_list=target_names_list)
     
     result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
                     +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n"\
