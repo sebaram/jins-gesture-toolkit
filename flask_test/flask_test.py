@@ -369,6 +369,8 @@ def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TAR
                 'GYRO': ['GYRO_X', 'GYRO_Y', 'GYRO_Z']}
     W_LENGTH = 50
     
+    target_names_list = [target_df.loc[target_df.Target==i].iloc[0].TargetName for i in target_df.Target.unique() if i>=0]
+    
     for i,row in target_df.iterrows():
         if row.TrialNum <0:
             continue
@@ -426,10 +428,24 @@ def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TAR
     
     result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
                     +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n"\
-                    +str(results_[1])
+                    +str(target_names_list)+"\n"\
+                    +str(results_[1])+"\n\n\n"
+    # result_str += conf_matrix_fixedwidth(results_[1], target_names_list)
     print(result_str)
     return result_str
-        
+
+def conf_matrix_fixedwidth(conf_mat, target_list):
+    str_ = ""
+    num = len(target_list)
+    max_str_len = max([len(one) for one in target_list])
+    
+    target_list_str = [one.rjust(max_str_len," ") for one in target_list]
+    
+    str_ += (" "*(max_str_len+2)) +"|".join(target_list_str)+"\n"
+    for i in range(num):
+        one_row_str = [str(one).rjust(max_str_len," ") for one in conf_mat[i,:]]
+        str_ += target_list_str[i]+" |"+",".join(one_row_str)+"\n"
+    return str_
 """
 FUNCTIONS FOR KEY/MOUSE EVENT in PyGame
 
