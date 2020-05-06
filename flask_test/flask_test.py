@@ -8,7 +8,7 @@ Created on Thu Apr  2 12:50:38 2020
 from flask import Flask
 from flask import request, render_template, jsonify, redirect, url_for
 
-from flaskwebgui import FlaskUI #get the FlaskUI class
+# from flaskwebgui import FlaskUI #get the FlaskUI class
 
 import pygame
 
@@ -34,7 +34,6 @@ import inspect
 # import custom
 sys.path.append("../libs")
 import JinsSocket
-import NoseTools as NoseTools
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
 import methods_filter, methods_feature, methods_model
