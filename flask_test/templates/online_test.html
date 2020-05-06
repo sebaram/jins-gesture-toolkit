@@ -27,15 +27,23 @@
     </nav>
     
     <div class="forms centerContainer">
+        <form action="" method="POST">
+            <div class="form-group">
+                <label for="target_model_selection" class="font-weight-bold h3">Select model to show online result:</label>
+                <select type="text" class="form-control" id="target_model_selection" name="target_model_selection">
+                    {% for one_model in available_model %}
+                    <option value="{{one_model}}" SELECTED>{{one_model}}</option>"
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" name="action" value="startOnlinetest" class="btn btn-primary btn-lg">Start Online Testing<br>(pygame)</button>
+        </form>
         
-        <div class="form-group">
-            <label for="target_data_selection" class="font-weight-bold h3">1. Select model to show online result:</label>
-            <select type="text" class="form-control" id="target_model_selection" name="target_model_selection">
-                {% for one_nodel in available_model %}
-                <option value="{{one_seg}}" SELECTED>{{one_nodel}}</option>"
-                {% endfor %}
-            </select>
-        </div>
+        
+        
+
+        
     </div>
 
 

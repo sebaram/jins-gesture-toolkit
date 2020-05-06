@@ -24,6 +24,8 @@ import pandas as pd
 from scipy import signal
 
 import pickle
+from joblib import dump, load
+
 
 import inspect
 
@@ -140,7 +142,7 @@ def train_test_gestures():
         model = getattr(methods_model, TARGET_MODEL)()
         results_ = model.get_confusion_matrix(totalX,totaly,cv=2,target_names_list=target_names_list)
         result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
-                        +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n"\
+                        +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n\n"\
                         +str(target_names_list)+"\n"\
                         +str(results_[1])+"\n\n\n"
         
@@ -171,11 +173,24 @@ def save_trained_model():
         model = getattr(methods_model, TARGET_MODEL)()
         model.train(totalX,totaly,target_names_list=target_names_list)
         
+        saving_dict = {"TARGET_FILTER" : TARGET_FILTER,
+                       "TARGET_MODEL": TARGET_MODEL,
+                       "TARGET_RAW_AXIS": TARGET_RAW_AXIS,
+                       "TARGET_FEATURE_AXIS": TARGET_FEATURE_AXIS,
+                       "TARGET_FEATURES": TARGET_FEATURES,
+                       "model": model}
+        
         f_name = os.path.join(save_trained_folder, datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_{}.joblib".format(model.__class__.__name__))
-        model.save_model(f_name)
-        model_saved_name = model.save_name
+        dump(saving_dict,f_name)
+        # model.save_model(f_name)
+        model_saved_name = f_name
         print("----saved:",model_saved_name)
     return jsonify(result=model_saved_name)
+
+
+
+
+
 # @app.route('/_refreshresult', methods= ['GET','POST'])
 # def resfresh_train_results():
 #     global result_str
@@ -272,7 +287,21 @@ def training():
 
 @app.route('/online_test', methods=['GET', 'POST'])
 def online_test():
+    global number_of_trials, target_gestures
     model_list = refresh_modelList(save_trained_folder)
+    if request.method == 'POST':
+        print("===start online test")
+        f_name_model = os.path.join(save_trained_folder, request.form.get("target_model_selection"))
+        print(f_name_model)
+        
+        if request.form['action'] == 'startOnlinetest':
+            if not pygame_is_running:
+                runPygame(participant_name="test", trial_numbers=number_of_trials, target_gestures=target_gestures,
+                      one_dollar_template = None,
+                      enable_experiment=False, save_result=False,
+                      show_online = True,
+                      model_name = f_name_model)
+        
     return render_template('online_test.html', available_model=model_list)
 
 
@@ -387,7 +416,7 @@ def makeoneDollarTrainingSet(f_name):
         pickle.dump(custom_training, handle, protocol=pickle.HIGHEST_PROTOCOL)    
         print("DONE: %s"%f_name)
 def create_Xy_from_df(target_df, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES):
-    test_sum = methods_feature.sumAllFeatures(TARGET_FEATURES)
+    this_features_sum = methods_feature.sumAllFeatures(TARGET_FEATURES)
     
     totalX = []
     totaly = []
@@ -399,15 +428,49 @@ def create_Xy_from_df(target_df, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_A
     
     target_names_list = [target_df.loc[target_df.Target==i].iloc[0].TargetName for i in target_df.Target.unique() if i>=0]
     
+    # create total label
+    row = target_df.iloc[0]
+    total_label = []
+    this_data = row.DATA.copy()
+    for one_axis_set in TARGET_RAW_AXIS:
+        if '_fft' in one_axis_set:
+            target_set = one_axis_set.replace('_fft','')
+            is_fft = True
+        else:
+            target_set = one_axis_set
+            is_fft = False
+        
+        for one_part in AXIS_SET[target_set]:
+                if is_fft:
+                    post_fix = 'fft'
+                else:
+                    post_fix = ''
+                total_label += [one_part+"{}_{:03d}".format(post_fix,i) for i in range(W_LENGTH)]
+    for one_axis in TARGET_FEATURE_AXIS:
+        for one_part in AXIS_SET[target_set]:
+            total_label += [one_axis+"_"+one_name for one_name in this_features_sum.update_label()]
+              
+                
     for i,row in target_df.iterrows():
         if row.TrialNum <0:
             continue
-        total_label = []
-        rowX = np.array([])
         this_data = row.DATA.copy()
         
+        rowX = get_single_X(this_data, this_features_sum, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS)
+                
+        totalX.append(list(rowX))
+        totaly.append(row.Target)
         
-        for one_axis_set in TARGET_RAW_AXIS:
+    return totalX, totaly, target_names_list
+
+def get_single_X(this_data, sum_feature, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,
+                             AXIS_SET = {'EOG': ['EOG_L', 'EOG_R', 'EOG_H', 'EOG_V'],
+                                            'ACC':  ['ACC_X', 'ACC_Y', 'ACC_Z'],
+                                            'GYRO': ['GYRO_X', 'GYRO_Y', 'GYRO_Z']},
+                            fft_resample_num = 50):
+    
+    rowX = np.array([])
+    for one_axis_set in TARGET_RAW_AXIS:
             if '_fft' in one_axis_set:
                 target_set = one_axis_set.replace('_fft','')
                 is_fft = True
@@ -416,43 +479,40 @@ def create_Xy_from_df(target_df, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_A
                 is_fft = False
             
             for one_part in AXIS_SET[target_set]:
-                    tmp_raw = signal.resample(this_data[one_part].values, W_LENGTH)
-                    if is_fft:
-                        tmp_raw = np.abs(np.fft.fft(tmp_raw))
-                        post_fix = 'fft'
-                    else:
-                        post_fix = ''
-                    rowX = np.append(rowX, tmp_raw)
-                    total_label += [one_part+"{}_{:03d}".format(post_fix,i) for i in range(W_LENGTH)]
+                try:
+                    tmp_raw = signal.resample(this_data[one_part].values, fft_resample_num)
+                except:
+                    tmp_raw = signal.resample(this_data[one_part], fft_resample_num)
+                        
+                if is_fft:
+                    tmp_raw = np.abs(np.fft.fft(tmp_raw))
+                rowX = np.append(rowX, tmp_raw)
                     
             
-        for one_axis in TARGET_FEATURE_AXIS:
-            if 'diff' in one_axis:
-                target_set = one_axis.replace('_diff','')
-                is_diff = True
-            else:
-                target_set = one_axis
-                is_diff = False
-                
-            for one_part in AXIS_SET[target_set]:
-                sig = this_data[one_part].values
-                if is_diff:
-                    sig = np.diff(sig)
-                
-                for one_filter in TARGET_FILTER:
-                    sig = getattr(methods_filter, one_filter)(sig)
-                
-                partX = test_sum.cal_features_from_one_signal(sig)
+    for one_axis in TARGET_FEATURE_AXIS:
+        if 'diff' in one_axis:
+            target_set = one_axis.replace('_diff','')
+            is_diff = True
+        else:
+            target_set = one_axis
+            is_diff = False
             
-                rowX = np.append(rowX, partX)
-                total_label += [one_axis+"_"+one_name for one_name in test_sum.update_label()]
+        for one_part in AXIS_SET[target_set]:
+            try:
+                sig = this_data[one_part].values
+            except:
+                sig = this_data[one_part]
                 
-        totalX.append(list(rowX))
-        totaly.append(row.Target)
-        
-    return totalX, totaly, target_names_list
-
-
+            if is_diff:
+                sig = np.diff(sig)
+            for one_filter in TARGET_FILTER:
+                sig = getattr(methods_filter, one_filter)(sig)
+            partX = sum_feature.cal_features_from_one_signal(sig)
+            
+            rowX = np.append(rowX, partX)
+                
+    return rowX
+    
 def get_train_result(totalX, totaly, target_names_list, TARGET_MODEL):
     
     model = getattr(methods_model, TARGET_MODEL)()
@@ -514,7 +574,7 @@ def corr2_coeff(A,B):
     
 def runPygame(participant_name, trial_numbers, target_gestures,
               one_dollar_template = None,
-              forest_TF_name = save_trained_folder+"/Default_TF_Tree.pkl", forest_Type_name = save_trained_folder+"/Default_Type_Tree.pkl",
+              model_name = "2020-05-06 16_41_12_RDFclassifier.joblib",
               enable_experiment = True, save_result = False, show_online = False,
               width=1920, height=1080, full_screen = False,
               background = (200,200,200, 255),
@@ -569,8 +629,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name+"_EXP%d"%(experiment_mode)
     
     """Thread 1: DATA COLLECTION """
-    # jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
-    jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
+    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
+    # jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
     jins_client.setConnection()
     jins_client.start()
 
@@ -582,25 +642,27 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     exp1.setDataCollection(time_before=time_before,time_recording=time_recording)
     
     if show_online:
-        if "Default_Type_Tree.pkl" in forest_Type_name:
-            show_pygame = showResult(pygame, screen)
-        else:
-            type_forText = dict()
-            gestures = forest_Type_name.split("[")[1].split("]")[0].split(",")
+        """load/init classifier"""
+        load_model_and_info = load(model_name)
+        
+        feature_creator = methods_feature.sumAllFeatures(load_model_and_info['TARGET_FEATURES'])
+        clf_model = load_model_and_info['model']
+        
+        type_forText = dict()
+        for i, one_gesture in enumerate(clf_model.target_names_list):
+            type_forText[i] = one_gesture
+        show_pygame = showResult(pygame, screen, type_forText)
             
-            for i, one_gesture in enumerate(gestures):
-                type_forText[i] = one_gesture
-            
-            show_pygame = showResult(pygame, screen, type_forText)
         
         
 
     if show_online:
-        rdf_class = NoseTools.RDFclassifier(target_thre_noFalse=0.60, sampling_dt=sampling_window, 
-                                        stab_time=stab_time, dt_ms=10, 
-                                        jins_client=jins_client, enable_fft_graph=enable_freq_showing,
-                                        enable_graph=enable_graph_showing, 
-                                        f_TF=forest_TF_name, f_Type=forest_Type_name)
+        """load/init classifier"""
+        # rdf_class = NoseTools.RDFclassifier(target_thre_noFalse=0.60, sampling_dt=sampling_window, 
+        #                                 stab_time=stab_time, dt_ms=10, 
+        #                                 jins_client=jins_client, enable_fft_graph=enable_freq_showing,
+        #                                 enable_graph=enable_graph_showing, 
+        #                                 f_TF=forest_TF_name, f_Type=forest_Type_name)
     
     
     pygame_is_running = True
@@ -642,9 +704,9 @@ def runPygame(participant_name, trial_numbers, target_gestures,
 #        cur_res, cur_prop = rdf_class.runJinsTypeonly(cur_t, printing=print_status)
         
                 
+        
         if enable_experiment:
-            
-            
+            """for data collection"""
             
             if experiment_mode in [1,2,3]:
                 target_res = exp1.countDetectionResult(cur_res)
@@ -654,7 +716,17 @@ def runPygame(participant_name, trial_numbers, target_gestures,
                 
                 
         elif show_online:
-            cur_res, cur_prop = rdf_class.runJinsTypeonly(cur_t, printing=print_status)
+            """for online test"""
+            window_data = jins_client.getLastbyTime_dict(2000)
+            inputX = get_single_X(window_data, feature_creator,
+                                  load_model_and_info['TARGET_FILTER'],
+                                  load_model_and_info['TARGET_RAW_AXIS'],
+                                  load_model_and_info['TARGET_FEATURE_AXIS'])
+            
+            inputX = inputX.reshape(1, -1)
+            
+            cur_res, cur_prop = clf_model.classify_w_prob(inputX)
+            # cur_res, cur_prop = rdf_class.runJinsTypeonly(cur_t, printing=print_status)
             
             if len(cur_prop)>0:
                 show_pygame.showResultTextwProp(cur_res, cur_prop)

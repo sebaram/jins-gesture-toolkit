@@ -19,7 +19,7 @@ from sklearn.neural_network import MLPClassifier
 class Classifier:
     """Super Class"""
     def __init__(self):
-        self.target_names_list = ""
+        self.target_names_list = []
         self.save_name = "not saved..."
         
     def train(self, Xlist,ylist, save=False, target_names_list=""):
@@ -27,6 +27,10 @@ class Classifier:
         self.clf.fit(Xlist, ylist)
         if save:
             self.save_model()
+    def classify_w_prob(self, inputX):
+        proba = self.clf.predict_proba(inputX)
+        result =  self.clf.predict(inputX)
+        return result[0], proba[0]
     
     def get_confusion_matrix(self, testX, testy, cv=10, target_names_list=""):
         self.target_names_list = target_names_list
