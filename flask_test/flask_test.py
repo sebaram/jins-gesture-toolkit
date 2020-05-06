@@ -613,7 +613,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         fpsText = fps_font.render("%dfps"%(clock.get_fps()), True, (100,255,100))
         screen.blit(fpsText, (0,0))
     
-    pygame.display.set_caption("Jins MEME Gesture Toolkit")
+    pygame.display.set_caption("Ocular Gesture Toolkit")
     
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
