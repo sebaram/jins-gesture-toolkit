@@ -7,21 +7,21 @@
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
     <script>
         function send_trainInfo(){
-            console.log($('#target_data_selection').find(":selected").text());
+//            console.log($('#target_data_selection').find(":selected").text());
             
             var checked_filter = get_all_checked('filter_checkbox');
-            console.log(checked_filter);
+//            console.log(checked_filter);
             
             var checked_model = get_all_checked('model_radio');
-            console.log(checked_model);
+//            console.log(checked_model);
             
             var checked_raw_data_input = get_all_checked('rawCheckbox');
-            console.log(checked_raw_data_input);
+//            console.log(checked_raw_data_input);
             
             var checked_target_axis = get_all_checked('targetaxisCheckbox');
-            console.log(checked_target_axis);
+//            console.log(checked_target_axis);
             var checked_features = get_all_checked('single_feature_checkbox');
-            console.log(checked_features);
+//            console.log(checked_features);
             
             
             var sending_data = {"selected_train_data": $('#target_data_selection').find(":selected").text(),
@@ -61,7 +61,7 @@
             $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
             $.getJSON($SCRIPT_ROOT + "/_refreshresult",
                 function(data) {
-                    console.log("get result:"+ data.result);
+//                    console.log("get result:"+ data.result);
                     var obj = $("#result_str").text(data.result);
                     obj.html(obj.html().replace(/\n/g,'<br/>'));
                 });

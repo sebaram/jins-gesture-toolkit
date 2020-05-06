@@ -403,7 +403,7 @@ def get_train_result(target_df, TARGET_MODEL, TARGET_FILTER, TARGET_RAW_AXIS,TAR
                 target_set = one_axis.replace('_diff','')
                 is_diff = True
             else:
-                target_set
+                target_set = one_axis
                 is_diff = False
                 
             for one_part in AXIS_SET[target_set]:
