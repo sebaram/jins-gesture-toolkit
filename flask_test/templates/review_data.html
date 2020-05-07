@@ -8,17 +8,12 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
     
     <script>
-//        $(document).ready(function () {
-//            update_charts();
-//     
-//        });
-        
+    
         function reviewData(){
             console.log($('#target_seg_selection').find(":selected").text());
             $.post("/_gestureplot", {"selected_seg_data": $('#target_seg_selection').find(":selected").text()});
             
             update_charts();
-            
         }
         
         function update_charts() {

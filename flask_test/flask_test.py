@@ -34,7 +34,6 @@ import inspect
 # import custom
 sys.path.append("../libs")
 import JinsSocket
-import NoseTools as NoseTools
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
 import methods_filter, methods_feature, methods_model
@@ -87,9 +86,9 @@ print_status = False
 
 
 app = Flask(__name__)
-app.config['ENV'] = 'development'
-app.config['DEBUG'] = True
-app.config['TESTING'] = True
+# app.config['ENV'] = 'development'
+# app.config['DEBUG'] = True
+# app.config['TESTING'] = True
 
 
 
@@ -277,6 +276,7 @@ def training():
     
     filter_list = [a[0] for a in inspect.getmembers(methods_filter, inspect.isfunction)]
     models_list = [a[0] for a in inspect.getmembers(methods_model, inspect.isclass) if 'methods_model' in str(a[1])]
+    models_list.remove('Classifier')
     features_list = [a[0] for a in inspect.getmembers(methods_feature, inspect.isfunction)]
 
     return render_template('training.html',
@@ -614,7 +614,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         fpsText = fps_font.render("%dfps"%(clock.get_fps()), True, (100,255,100))
         screen.blit(fpsText, (0,0))
     
-    pygame.display.set_caption("Jins MEME Gesture Toolkit")
+    pygame.display.set_caption("Ocular Gesture Toolkit")
     
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
@@ -630,8 +630,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name+"_EXP%d"%(experiment_mode)
     
     """Thread 1: DATA COLLECTION """
-    # jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
-    jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
+    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
+    # jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
     jins_client.setConnection()
     jins_client.start()
 
@@ -775,9 +775,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
             
 # call the 'run' method
 if __name__ == '__main__':
-    # Feed it the flask app instance 
-    # ui = FlaskUI(app)
-    # ui.run()
+    
     
 
     checkFolder(save_folder)
@@ -785,5 +783,13 @@ if __name__ == '__main__':
 
 
     url = "http://127.0.0.1:5000"
-    # threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    
+    # Feed it the flask app instance 
+    # ui = FlaskUI(app)
+    # ui.run()
+    
     app.run()
+    
+    
+    
