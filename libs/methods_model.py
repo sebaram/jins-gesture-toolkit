@@ -8,6 +8,7 @@ import sys
 from joblib import dump, load
 from datetime import datetime
 
+import pandas as pd
 
 from sklearn.model_selection import cross_val_predict, cross_val_score
 from sklearn.metrics import confusion_matrix
@@ -33,7 +34,9 @@ class Classifier:
         return result[0], proba[0]
     
     def get_confusion_matrix(self, testX, testy, cv=10, target_names_list=""):
-        self.target_names_list = target_names_list
+        if type(target_names_list) == list:
+            self.target_names_list = target_names_list
+            
         cross_result = cross_val_score(self.clf, testX, testy, cv=cv)
         y_pred = cross_val_predict(self.clf, testX, testy, cv=cv)
         conf_mat = confusion_matrix(testy, y_pred)
@@ -46,6 +49,11 @@ class Classifier:
         self.save_name = f_name
         dump(self, f_name)
         
+    @staticmethod
+    def confmat_to_htmltable( conf_mat, target_names_list=""):
+        df = pd.DataFrame(conf_mat, index=target_names_list, columns=target_names_list)
+        conf_mat_html = df.to_html()
+        return conf_mat_html
         
     
 class linearSVMclassifier(Classifier):

@@ -68,8 +68,8 @@
             $.getJSON($SCRIPT_ROOT + "/_traintest",
                 function(data) {
 //                    console.log("get result:"+ data.result);
-                    var obj = $("#result_str").text(data.result);
-                    obj.html(obj.html().replace(/\n/g,'<br/>'));
+                    var obj = $("#result_str").html(data.result);
+//                    obj.html(obj.html().replace(/\n/g,'<br/>'));
                 });
         }
         function get_model_name(){
@@ -77,8 +77,8 @@
             $.getJSON($SCRIPT_ROOT + "/_savemodel",
                 function(data) {
 //                    console.log("get result:"+ data.result);
-                    var obj = $("#result_str").text("Model saved:"+data.result);
-                    obj.html(obj.html().replace(/\n/g,'<br/>'));
+                    var obj = $("#result_str").html("Model saved:"+data.result);
+//                    obj.html(obj.html().replace(/\n/g,'<br/>'));
                 });
         }
         
