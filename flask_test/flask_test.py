@@ -30,6 +30,10 @@ from joblib import dump, load
 import inspect
 
 
+import random
+import json
+from flask import Response
+
 
 # import custom
 sys.path.append("../libs")
@@ -105,6 +109,16 @@ def info_to_html():
                    time_before=time_before,
                    time_recording=time_recording)
 
+@app.route('/chart-data')
+def chart_data():
+    def generate_random_data():
+        while True:
+            json_data = json.dumps(
+                {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'value': random.random() * 100})
+            yield f"data:{json_data}\n\n"
+            time.sleep(0.001)
+
+    return Response(generate_random_data(), mimetype='text/event-stream')
 
 
 @app.route('/_gestureplot', methods= ['GET','POST'])
@@ -118,6 +132,7 @@ def send_gesture_plot_info():
     segmented_df = pd.read_pickle(os.path.join(save_folder, selected_seg_data))
     all_trials_list = segdf_to_chartdict(segmented_df)
     return jsonify(all_trials=all_trials_list)
+
 
 
 result_str = "Press 'Start Training' button to get result"
@@ -231,6 +246,10 @@ def init_data_gathering():
 
     return render_template('form.html', name=participant_name)
 
+@app.route('/online_plot', methods=['GET', 'POST'])
+def online_plot():
+    return render_template('online_plot.html')
+    
 @app.route('/review_data', methods=['GET', 'POST'])
 def review_data():
     global save_folder
