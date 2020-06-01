@@ -134,11 +134,10 @@ def send_gesture_plot_info():
     return jsonify(all_trials=all_trials_list)
 
 
-
-result_str = "Press 'Start Training' button to get result"
+result_html = "Press 'Start Training' button to get result"
 @app.route('/_traintest', methods= ['GET','POST'])
 def train_test_gestures():
-    global save_folder, result_str
+    global save_folder, result_html
         
     if request.method == 'POST':
         selected_train_data = pd.read_pickle(os.path.join(save_folder,request.form['selected_train_data']))
@@ -148,19 +147,20 @@ def train_test_gestures():
         TARGET_RAW_AXIS = split_remove_empty(request.form['checked_raw_data_input']) 
         TARGET_FEATURE_AXIS = split_remove_empty(request.form['checked_target_axis'])
         TARGET_FEATURES = split_remove_empty(request.form['checked_features']) 
-        result_str = "training.... please wait"
+        result_html = "training.... please wait"
         
         totalX, totaly, target_names_list = create_Xy_from_df(selected_train_data, TARGET_FILTER, TARGET_RAW_AXIS,TARGET_FEATURE_AXIS,TARGET_FEATURES)
         # result_str = get_train_result(totalX, totaly, target_names_list, TARGET_MODEL)
         
         model = getattr(methods_model, TARGET_MODEL)()
-        results_ = model.get_confusion_matrix(totalX,totaly,cv=2,target_names_list=target_names_list)
-        result_str = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"\nModel: {}".format(TARGET_MODEL)+"\n"\
-                        +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"\n\n"\
-                        +str(target_names_list)+"\n"\
-                        +str(results_[1])+"\n\n\n"
+        results_ = model.get_confusion_matrix(totalX,totaly,cv=2, target_names_list=target_names_list)
+        conf_mat_html = methods_model.Classifier.confmat_to_htmltable(results_[1],model.target_names_list)
+        result_html = "Last run:"+datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"<br><br>"\
+                        +"Model: {}".format(TARGET_MODEL)+"<br>"\
+                        +"mean: {:.2f}%,  std: {:.2f}%".format(results_[0].mean()*100, results_[0].std()*100)+"<br><br>"\
+                        +conf_mat_html+"<br><br><br><br>"
         
-    return jsonify(result=result_str)
+    return jsonify(result=result_html)
 @app.route('/_refreshresult', methods= ['GET','POST'])
 def resfresh_train_results():
     global result_str

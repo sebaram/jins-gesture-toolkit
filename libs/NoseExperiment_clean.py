@@ -65,7 +65,7 @@ class Experiment:
                  mp3_save_folder = "mp3",
                  total_time = 5, random_order = True):
         self.size = size
-        self.size_ratio = (size[0]/1920)
+        self.size_ratio = (size[0]/1920)*1.5
         
         self.type_num = len(typeText)
         self.trial_num = trial_num
@@ -132,8 +132,8 @@ class Experiment:
         
         
         # Font Settings
-        self.font_up_size, self.font_up_position = int(100*self.size_ratio), (self.size[0]/2, int(50*self.size_ratio))
-        self.font_down_size, self.font_down_position = int(60*self.size_ratio), (self.size[0]/2, int(150*self.size_ratio))
+        self.font_up_size, self.font_up_position = int(100*self.size_ratio), (self.size[0]/2, int(50*self.size_ratio)+200)
+        self.font_down_size, self.font_down_position = int(60*self.size_ratio), (self.size[0]/2, int(150*self.size_ratio)+200)
         self.generateFont()
         
         # self.font_up = pygame.font.SysFont("arial", self.font_up_size, bold=True)
