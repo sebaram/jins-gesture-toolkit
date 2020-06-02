@@ -612,7 +612,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
               width=1920, height=1080, full_screen = False,
               background = (200,200,200, 255),
               dt = 10):
-    global pygame_is_running
+    global pygame_is_running, jins_client
     pygame_is_running = True
     targetType = dict()
     for i, name in enumerate(target_gestures):
@@ -662,11 +662,12 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     save_name_str = save_folder +"/"+ datetime.now().strftime('%Y-%m-%d %H_%M_%S')+"_"+participant_name+"_EXP%d"%(experiment_mode)
     
     """Thread 1: DATA COLLECTION """
-    jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
-    # jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
-    jins_client.setConnection()
-    jins_client.start()
-
+    if not 'jins_client' in globals():
+        jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=saving_size, save_name=save_name_str)
+        # jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
+        jins_client.setConnection()
+        jins_client.start()
+    
 
     exp1 = Experiment(experiment_mode,
                       name = participant_name, trial_num = trial_numbers, size = size,
@@ -685,18 +686,9 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         for i, one_gesture in enumerate(clf_model.target_names_list):
             type_forText[i] = one_gesture
         show_pygame = showResult(pygame, screen, type_forText)
-            
-        
+                 
         
 
-    if show_online:
-        """load/init classifier"""
-        # rdf_class = NoseTools.RDFclassifier(target_thre_noFalse=0.60, sampling_dt=sampling_window, 
-        #                                 stab_time=stab_time, dt_ms=10, 
-        #                                 jins_client=jins_client, enable_fft_graph=enable_freq_showing,
-        #                                 enable_graph=enable_graph_showing, 
-        #                                 f_TF=forest_TF_name, f_Type=forest_Type_name)
-    
     
     pygame_is_running = True
     while not done:
