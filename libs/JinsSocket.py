@@ -318,6 +318,45 @@ class JinsSocket(threading.Thread):
                                                           self.AccX[-1], self.AccY[-1], self.AccZ[-1])
         return str_
 
+    def getLast_dict_one(self, delta_value=False):
+        if delta_value:
+            eog_l = self.EogL[-1] - self.EogL_average
+            eog_r = self.EogR[-1] - self.EogR_average
+            data_dict = {"ACC_X": self.AccX[-1] - self.AccX_average,
+                        "ACC_Y": self.AccY[-1] - self.AccY_average,
+                        "ACC_Z": self.AccZ[-1] - self.AccZ_average,
+                        
+                        "GYRO_X": self.GyroX[-1] - self.GyroX_average,
+                        "GYRO_Y": self.GyroY[-1] - self.GyroY_average,
+                        "GYRO_Z": self.GyroZ[-1] - self.GyroZ_average,
+                        
+                        "EOG_L": eog_l,
+                        "EOG_R": eog_r,
+                        "EOG_H": eog_l-eog_r,
+                        "EOG_V": (eog_l+eog_r)/2,
+                        "TIME": self.TIME[-1]
+                        
+                            }
+                    
+            return data_dict
+            
+        data_dict = {   "ACC_X": self.AccX[-1],
+                        "ACC_Y": self.AccY[-1],
+                        "ACC_Z": self.AccZ[-1],
+                        
+                        "GYRO_X": self.GyroX[-1],
+                        "GYRO_Y": self.GyroY[-1],
+                        "GYRO_Z": self.GyroZ[-1],
+                        
+                        "EOG_L": self.EogL[-1],
+                        "EOG_R": self.EogR[-1],
+                        "EOG_H": self.EogL[-1]-self.EogR[-1],
+                        "EOG_V": (self.EogL[-1]+self.EogR[-1])/2,
+                        "TIME": self.TIME[-1]
+                            }
+                    
+        return data_dict
+        
     def getLast_dict(self, size, delta_value=False):
         if delta_value:
             eog_l = self.EogL[-size:] - self.EogL_average

@@ -111,11 +111,19 @@ def info_to_html():
 
 @app.route('/chart-data')
 def chart_data():
+    
+    
     def generate_random_data():
+        global jins_client
+        last_t = 0
         while True:
-            json_data = json.dumps(
-                {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'value': random.random() * 100})
-            yield f"data:{json_data}\n\n"
+            new_results = jins_client.getLast_dict_one()
+            
+            if new_results['TIME'] != last_t:
+                json_data = json.dumps(new_results)
+                
+                last_t = new_results['TIME']
+                yield f"data:{json_data}\n\n"
             time.sleep(0.001)
 
     return Response(generate_random_data(), mimetype='text/event-stream')
@@ -248,6 +256,12 @@ def init_data_gathering():
 
 @app.route('/online_plot', methods=['GET', 'POST'])
 def online_plot():
+    global jins_client
+    if not 'jins_client' in globals():
+        jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=100*60*5)
+        jins_client.setConnection()
+        jins_client.start()
+
     return render_template('online_plot.html')
     
 @app.route('/review_data', methods=['GET', 'POST'])

@@ -8,6 +8,26 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
 
     <script>
+        const LINE_COLOR = {
+            'EOG_L': "#C00000",
+            'EOG_R': "#0000C0",
+            'EOG_H': "#C000C0",
+            'EOG_V': "#00C0C0",
+
+            'GYRO_X': "#ED553B",
+            'GYRO_Y': "#F6D55C",
+            'GYRO_Z': "#3CAEA3",
+
+            'ACC_X': "#ED553B",
+            'ACC_Y': "#F6D55C",
+            'ACC_Z': "#3CAEA3"
+        };
+        const MIN_MAX = {
+            'ACC': [-36000, 36000],
+            'GYRO': [-36000, 36000],
+            'EOG': [-1200, 1200]
+        };
+
         $(document).ready(function() {
             const config = {
 
@@ -15,15 +35,37 @@
                 data: {
                     labels: [],
                     datasets: [{
-                        label: "Random Dataset",
-                        backgroundColor: 'rgb(255, 99, 132)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        data: [],
-                        fill: false,
-                    }],
+                            label: "EOG_L",
+                            backgroundColor: LINE_COLOR['EOG_L'],
+                            borderColor: LINE_COLOR['EOG_L'],
+                            data: [],
+                            fill: false,
+                        },
+                        {
+                            label: "EOG_R",
+                            backgroundColor: LINE_COLOR['EOG_R'],
+                            borderColor: LINE_COLOR['EOG_R'],
+                            data: [],
+                            fill: false,
+                        },
+                        {
+                            label: "EOG_H",
+                            backgroundColor: LINE_COLOR['EOG_H'],
+                            borderColor: LINE_COLOR['EOG_H'],
+                            data: [],
+                            fill: false,
+                        },
+                        {
+                            label: "EOG_V",
+                            backgroundColor: LINE_COLOR['EOG_V'],
+                            borderColor: LINE_COLOR['EOG_V'],
+                            data: [],
+                            fill: false,
+                        }
+                    ],
                 },
                 options: {
-//                    responsive: true,
+
                     title: {
                         display: true,
                         text: 'Creating Real-Time Charts with Flask'
@@ -37,21 +79,21 @@
                         intersect: true
                     },
                     scales: {
+
                         xAxes: [{
-                            display: true,
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Time'
-                            }
+                            display: false
                         }],
                         yAxes: [{
-                            display: true,
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Value'
+                            display: false
+                        }, {
+                            ticks: {
+                                max: MIN_MAX['EOG'][1],
+                                min: MIN_MAX['EOG'][0]
                             }
-                        }]
+                        }],
+
                     }
+
                 }
             };
 
@@ -66,9 +108,18 @@
                 if (config.data.labels.length === 200) {
                     config.data.labels.shift();
                     config.data.datasets[0].data.shift();
+                    config.data.datasets[1].data.shift();
+                    config.data.datasets[2].data.shift();
+                    config.data.datasets[3].data.shift();
                 }
-                config.data.labels.push(data.time);
-                config.data.datasets[0].data.push(data.value);
+                config.data.labels.push(data.TIME);
+
+                config.data.datasets[0].data.push(data.EOG_L);
+                config.data.datasets[1].data.push(data.EOG_R);
+                config.data.datasets[2].data.push(data.EOG_H);
+                config.data.datasets[3].data.push(data.EOG_V);
+                //                config.data.datasets[0].data.push(data.EOG_L);
+
                 lineChart.update();
             }
         });
