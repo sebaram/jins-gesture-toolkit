@@ -29,8 +29,8 @@
         };
 
         $(document).ready(function() {
-            
-            
+
+
             const eog_config = {
 
                 type: 'line',
@@ -42,6 +42,7 @@
                             borderColor: LINE_COLOR['EOG_L'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         },
                         {
                             label: "EOG_R",
@@ -49,6 +50,7 @@
                             borderColor: LINE_COLOR['EOG_R'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         },
                         {
                             label: "EOG_H",
@@ -56,6 +58,7 @@
                             borderColor: LINE_COLOR['EOG_H'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         },
                         {
                             label: "EOG_V",
@@ -63,10 +66,12 @@
                             borderColor: LINE_COLOR['EOG_V'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         }
                     ],
                 },
                 options: {
+
 
                     title: {
                         display: true,
@@ -98,8 +103,8 @@
 
                 }
             };
-            
-            
+
+
             const imu_config = {
 
                 type: 'line',
@@ -111,6 +116,7 @@
                             borderColor: LINE_COLOR['GYRO_X'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         },
                         {
                             label: "MAG_Y",
@@ -118,6 +124,7 @@
                             borderColor: LINE_COLOR['GYRO_Y'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         },
                         {
                             label: "MAG_Z",
@@ -125,6 +132,7 @@
                             borderColor: LINE_COLOR['GYRO_Z'],
                             data: [],
                             fill: false,
+                            lineTension: 0
                         }
                     ],
                 },
@@ -167,7 +175,7 @@
             const eog_source = new EventSource("/eog-data");
             eog_source.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                if (eog_config.data.labels.length === 200) {
+                if (eog_config.data.labels.length === 400) {
                     eog_config.data.labels.shift();
                     eog_config.data.datasets[0].data.shift();
                     eog_config.data.datasets[1].data.shift();
@@ -184,8 +192,8 @@
 
                 lineChart.update();
             }
-            
-            
+
+
             const lineChart_imu = new Chart(document.getElementById('imu-canvas').getContext('2d'), imu_config);
             const imu_source = new EventSource("/imu-data");
             imu_source.onmessage = function(event) {
@@ -206,9 +214,9 @@
 
                 lineChart_imu.update();
             }
-            
-            
-            
+
+
+
         });
 
     </script>
