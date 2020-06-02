@@ -37,6 +37,7 @@ from flask import Response
 
 # import custom
 sys.path.append("../libs")
+from sensorUDP import imus_UDP
 import JinsSocket
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
@@ -109,11 +110,9 @@ def info_to_html():
                    time_before=time_before,
                    time_recording=time_recording)
 
-@app.route('/chart-data')
-def chart_data():
-    
-    
-    def generate_random_data():
+@app.route('/eog-data')
+def jins_data():
+    def get_jins_data():
         global jins_client
         last_t = 0
         while True:
@@ -126,7 +125,29 @@ def chart_data():
                 yield f"data:{json_data}\n\n"
             time.sleep(0.001)
 
-    return Response(generate_random_data(), mimetype='text/event-stream')
+    return Response(get_jins_data(), mimetype='text/event-stream')
+
+@app.route('/imu-data')
+def imu_data():
+    def get_imu_data():
+        global imu_get
+        last_t = 0
+        while True:
+            new_results = imu_get.getLastData()
+            
+            
+            if new_results[-5] != last_t:
+                json_data = json.dumps({'TIME': new_results[-5],
+                                        'MAG_X': new_results[-3],
+                                        'MAG_Y': new_results[-2],
+                                        'MAG_Z': new_results[-1]
+                    })
+                
+                last_t = new_results[-5]
+                yield f"data:{json_data}\n\n"
+            time.sleep(0.001)
+
+    return Response(get_imu_data(), mimetype='text/event-stream')
 
 
 @app.route('/_gestureplot', methods= ['GET','POST'])
@@ -256,12 +277,15 @@ def init_data_gathering():
 
 @app.route('/online_plot', methods=['GET', 'POST'])
 def online_plot():
-    global jins_client
+    global jins_client, imu_get
     if not 'jins_client' in globals():
         jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=100*60*5)
         jins_client.setConnection()
         jins_client.start()
-
+    if not 'imu_get' in globals():
+        imu_get = imus_UDP(Port=12563)
+        imu_get.setConnection()
+        imu_get.start()
     return render_template('online_plot.html')
     
 @app.route('/review_data', methods=['GET', 'POST'])

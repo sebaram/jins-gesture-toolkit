@@ -29,7 +29,9 @@
         };
 
         $(document).ready(function() {
-            const config = {
+            
+            
+            const eog_config = {
 
                 type: 'line',
                 data: {
@@ -68,7 +70,7 @@
 
                     title: {
                         display: true,
-                        text: 'Creating Real-Time Charts with Flask'
+                        text: 'Jins Stream'
                     },
                     tooltips: {
                         mode: 'index',
@@ -96,32 +98,117 @@
 
                 }
             };
+            
+            
+            const imu_config = {
 
-            const context = document.getElementById('canvas').getContext('2d');
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                            label: "MAG_X",
+                            backgroundColor: LINE_COLOR['GYRO_X'],
+                            borderColor: LINE_COLOR['GYRO_X'],
+                            data: [],
+                            fill: false,
+                        },
+                        {
+                            label: "MAG_Y",
+                            backgroundColor: LINE_COLOR['GYRO_Y'],
+                            borderColor: LINE_COLOR['GYRO_Y'],
+                            data: [],
+                            fill: false,
+                        },
+                        {
+                            label: "MAG_Z",
+                            backgroundColor: LINE_COLOR['GYRO_Z'],
+                            borderColor: LINE_COLOR['GYRO_Z'],
+                            data: [],
+                            fill: false,
+                        }
+                    ],
+                },
+                options: {
 
-            const lineChart = new Chart(context, config);
+                    title: {
+                        display: true,
+                        text: 'IMU Stream'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
 
-            const source = new EventSource("/chart-data");
+                        xAxes: [{
+                            display: false
+                        }],
+                        yAxes: [{
+                            display: false
+                        }, {
+                            ticks: {
+                                max: 300,
+                                min: -300
+                            }
+                        }],
 
-            source.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if (config.data.labels.length === 200) {
-                    config.data.labels.shift();
-                    config.data.datasets[0].data.shift();
-                    config.data.datasets[1].data.shift();
-                    config.data.datasets[2].data.shift();
-                    config.data.datasets[3].data.shift();
+                    }
+
                 }
-                config.data.labels.push(data.TIME);
+            };
 
-                config.data.datasets[0].data.push(data.EOG_L);
-                config.data.datasets[1].data.push(data.EOG_R);
-                config.data.datasets[2].data.push(data.EOG_H);
-                config.data.datasets[3].data.push(data.EOG_V);
+
+            const lineChart = new Chart(document.getElementById('eog-canvas').getContext('2d'), eog_config);
+
+            const eog_source = new EventSource("/eog-data");
+            eog_source.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (eog_config.data.labels.length === 200) {
+                    eog_config.data.labels.shift();
+                    eog_config.data.datasets[0].data.shift();
+                    eog_config.data.datasets[1].data.shift();
+                    eog_config.data.datasets[2].data.shift();
+                    eog_config.data.datasets[3].data.shift();
+                }
+                eog_config.data.labels.push(data.TIME);
+
+                eog_config.data.datasets[0].data.push(data.EOG_L);
+                eog_config.data.datasets[1].data.push(data.EOG_R);
+                eog_config.data.datasets[2].data.push(data.EOG_H);
+                eog_config.data.datasets[3].data.push(data.EOG_V);
                 //                config.data.datasets[0].data.push(data.EOG_L);
 
                 lineChart.update();
             }
+            
+            
+            const lineChart_imu = new Chart(document.getElementById('imu-canvas').getContext('2d'), imu_config);
+            const imu_source = new EventSource("/imu-data");
+            imu_source.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (imu_config.data.labels.length === 200) {
+                    imu_config.data.labels.shift();
+                    imu_config.data.datasets[0].data.shift();
+                    imu_config.data.datasets[1].data.shift();
+                    imu_config.data.datasets[2].data.shift();
+
+                }
+                imu_config.data.labels.push(data.TIME);
+
+                imu_config.data.datasets[0].data.push(data.MAG_X);
+                imu_config.data.datasets[1].data.push(data.MAG_Y);
+                imu_config.data.datasets[2].data.push(data.MAG_Z);
+
+
+                lineChart_imu.update();
+            }
+            
+            
+            
         });
 
     </script>
@@ -133,7 +220,12 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <canvas id="canvas"></canvas>
+                        <canvas id="eog-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <canvas id="imu-canvas"></canvas>
                     </div>
                 </div>
             </div>
