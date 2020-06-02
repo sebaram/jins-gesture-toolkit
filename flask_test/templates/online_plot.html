@@ -38,40 +38,50 @@
                     labels: [],
                     datasets: [{
                             label: "EOG_L",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['EOG_L'],
                             borderColor: LINE_COLOR['EOG_L'],
                             data: [],
                             fill: false,
-                            lineTension: 0
+
                         },
                         {
                             label: "EOG_R",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['EOG_R'],
                             borderColor: LINE_COLOR['EOG_R'],
                             data: [],
                             fill: false,
-                            lineTension: 0
+
                         },
                         {
                             label: "EOG_H",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['EOG_H'],
                             borderColor: LINE_COLOR['EOG_H'],
                             data: [],
                             fill: false,
-                            lineTension: 0
+
                         },
                         {
                             label: "EOG_V",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['EOG_V'],
                             borderColor: LINE_COLOR['EOG_V'],
                             data: [],
                             fill: false,
-                            lineTension: 0
+
                         }
                     ],
                 },
                 options: {
-
+                    elements: {
+                        line: {
+                            tension: 0
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
 
                     title: {
                         display: true,
@@ -88,7 +98,7 @@
                     scales: {
 
                         xAxes: [{
-                            display: false
+                            display: true
                         }],
                         yAxes: [{
                             display: false
@@ -112,31 +122,38 @@
                     labels: [],
                     datasets: [{
                             label: "MAG_X",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['GYRO_X'],
                             borderColor: LINE_COLOR['GYRO_X'],
                             data: [],
                             fill: false,
-                            lineTension: 0
                         },
                         {
                             label: "MAG_Y",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['GYRO_Y'],
                             borderColor: LINE_COLOR['GYRO_Y'],
                             data: [],
                             fill: false,
-                            lineTension: 0
                         },
                         {
                             label: "MAG_Z",
+                            lineTension: 0,
                             backgroundColor: LINE_COLOR['GYRO_Z'],
                             borderColor: LINE_COLOR['GYRO_Z'],
                             data: [],
                             fill: false,
-                            lineTension: 0
                         }
                     ],
                 },
                 options: {
+                    elements: {
+                        line: {
+                            tension: 0
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
 
                     title: {
                         display: true,
@@ -153,7 +170,7 @@
                     scales: {
 
                         xAxes: [{
-                            display: false
+                            display: true
                         }],
                         yAxes: [{
                             display: false
@@ -169,8 +186,8 @@
                 }
             };
 
-
-            const lineChart = new Chart(document.getElementById('eog-canvas').getContext('2d'), eog_config);
+            var eog_ctx = document.getElementById('eog-canvas').getContext('2d');
+            const lineChart = new Chart(eog_ctx, eog_config);
 
             const eog_source = new EventSource("/eog-data");
             eog_source.onmessage = function(event) {
@@ -190,11 +207,11 @@
                 eog_config.data.datasets[3].data.push(data.EOG_V);
                 //                config.data.datasets[0].data.push(data.EOG_L);
 
-                lineChart.update();
+                lineChart.update(0);
             }
 
-
-            const lineChart_imu = new Chart(document.getElementById('imu-canvas').getContext('2d'), imu_config);
+            var imu_ctx = document.getElementById('imu-canvas').getContext('2d');
+            const lineChart_imu = new Chart(imu_ctx, imu_config);
             const imu_source = new EventSource("/imu-data");
             imu_source.onmessage = function(event) {
                 const data = JSON.parse(event.data);
@@ -212,7 +229,7 @@
                 imu_config.data.datasets[2].data.push(data.MAG_Z);
 
 
-                lineChart_imu.update();
+                lineChart_imu.update(0);
             }
 
 
@@ -227,12 +244,12 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body" style="height: 400px;">
                         <canvas id="eog-canvas"></canvas>
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body" style="height: 400px;">
                         <canvas id="imu-canvas"></canvas>
                     </div>
                 </div>
