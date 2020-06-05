@@ -6,214 +6,229 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/bootstrap.js') }}"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
-    
+
     <script>
-    
-        function reviewData(){
+        function reviewData() {
             console.log($('#target_seg_selection').find(":selected").text());
-            $.post("/_gestureplot", {"selected_seg_data": $('#target_seg_selection').find(":selected").text()});
-            
+            $.post("/_gestureplot", {
+                "selected_seg_data": $('#target_seg_selection').find(":selected").text()
+            });
+
             update_charts();
         }
-        
+
         function update_charts() {
-            $SCRIPT_ROOT = {{request.script_root | tojson | safe}};
+            $SCRIPT_ROOT = {
+                {
+                    request.script_root | tojson | safe
+                }
+            };
             $.getJSON($SCRIPT_ROOT + "/_gestureplot",
                 function(data) {
                     var el = document.getElementById('plot_charts');
-                    while( el.hasChildNodes() ){
+                    while (el.hasChildNodes()) {
                         el.removeChild(el.lastChild);
                     }
-                    for (one_gesture of data.all_trials){
+                    for (one_gesture of data.all_trials) {
                         add_one_chart_list(one_gesture.name, one_gesture.trials);
                         plot_one_gesture_charts(one_gesture.name, one_gesture.trials);
                         document.getElementById(one_gesture.name).addEventListener("mousewheel", horizontal_wheel);
                     }
                 });
         }
-        
-        
-        
+
+
+
         var current_dict = {};
         // Pixel increment you wish on each wheel spin.
         var ScrollX_pixelPer = 10;
-        function horizontal_wheel (e) {
+
+        function horizontal_wheel(e) {
             e.preventDefault();
 
             // Get the deltaY (always +/- 33.33333206176758) and multiply by the pixel increment you wish.
-//            var delta = ScrollX_pixelPer*(parseInt(e.originalEvent.deltaY)/33);
-            var delta = ScrollX_pixelPer*(parseInt(e.deltaY)/33);
+            //            var delta = ScrollX_pixelPer*(parseInt(e.originalEvent.deltaY)/33);
+            var delta = ScrollX_pixelPer * (parseInt(e.deltaY) / 33);
             var this_id = $(this).attr("id")
-            if(!(this_id in current_dict)){
+            if (!(this_id in current_dict)) {
                 current_dict[this_id] = 0;
             }
 
             // Increment/decrement current.
-            current_dict[this_id] = Math.min(current_dict[this_id]+delta, $(this).get(0).scrollWidth-$(this).width());
+            current_dict[this_id] = Math.min(current_dict[this_id] + delta, $(this).get(0).scrollWidth - $(this).width());
             current_dict[this_id] = Math.max(current_dict[this_id], 0);
 
             // Apply the new position.
-            $(this).scrollLeft(current_dict[this_id] );
+            $(this).scrollLeft(current_dict[this_id]);
         }
-        
-        
-        function add_one_chart_list(name, trials){
+
+
+        function add_one_chart_list(name, trials) {
             var append_str = '<br><br>\
 <div>\
-    <h3>'+name+'</h3>\
-    <div id="'+name+'"class="row flex-nowrap horizontal-scroll plot_div">\
+    <h3>' + name + '</h3>\
+    <div id="' + name + '"class="row flex-nowrap horizontal-scroll plot_div">\
 ';
-            for( one_trial of trials) {
+            for (one_trial of trials) {
                 append_str += '\
         <div class="flex-column">\
             <div class="card card-block card-plot" >\
                 <div class="card-body">\
-                    <h5 class="card-title">'+one_trial.id+'</h5>\
-                    <canvas id="'+name+one_trial.id+'_acc" style="height:600; width:600" ></canvas>\
+                    <h5 class="card-title">' + one_trial.id + '</h5>\
+                    <canvas id="' + name + one_trial.id + '_acc" style="height:600; width:600" ></canvas>\
                     <br>\
-                    <canvas id="'+name+one_trial.id+'_gyro" style="height:600; width:600" ></canvas>\
+                    <canvas id="' + name + one_trial.id + '_gyro" style="height:600; width:600" ></canvas>\
                     <br>\
-                    <canvas id="'+name+one_trial.id+'" style="height:600; width:600" ></canvas>\
+                    <canvas id="' + name + one_trial.id + '" style="height:600; width:600" ></canvas>\
                 </div>\
             </div>\
         </div>';
-                     
+
             }
             append_str += '</div>\n</div>';
 
-            $(append_str ).appendTo( "#plot_charts" );  
+            $(append_str).appendTo("#plot_charts");
         }
-        const LINE_COLOR = {'EOG_L': "#C00000", 
-                              'EOG_R': "#0000C0", 
-                              'EOG_H': "#C000C0", 
-                              'EOG_V': "#00C0C0", 
+        const LINE_COLOR = {
+            'EOG_L': "#C00000",
+            'EOG_R': "#0000C0",
+            'EOG_H': "#C000C0",
+            'EOG_V': "#00C0C0",
 
-                              'GYRO_X': "#ED553B", 
-                              'GYRO_Y': "#F6D55C", 
-                              'GYRO_Z': "#3CAEA3", 
+            'GYRO_X': "#ED553B",
+            'GYRO_Y': "#F6D55C",
+            'GYRO_Z': "#3CAEA3",
 
-                              'ACC_X': "#ED553B", 
-                              'ACC_Y': "#F6D55C", 
-                              'ACC_Z': "#3CAEA3"};
-        const MIN_MAX = {   'ACC': [-36000, 36000],
-                            'GYRO':[-36000, 36000],
-                            'EOG': [-1200, 1200] };
-        function plot_one_gesture_charts(name, trials){
+            'ACC_X': "#ED553B",
+            'ACC_Y': "#F6D55C",
+            'ACC_Z': "#3CAEA3"
+        };
+        const MIN_MAX = {
+            'ACC': [-36000, 36000],
+            'GYRO': [-36000, 36000],
+            'EOG': [-1200, 1200]
+        };
+
+        function plot_one_gesture_charts(name, trials) {
             var one_trial = trials[0]
-            
-            for (one_trial of trials){
-        
-                var dataset_ = {'ACC':[],
-                               'GYRO':[],
-                               'EOG':[],};
-                
-                for (var key_ in one_trial.sensor_vals){
+
+            for (one_trial of trials) {
+
+                var dataset_ = {
+                    'ACC': [],
+                    'GYRO': [],
+                    'EOG': [],
+                };
+
+                for (var key_ in one_trial.sensor_vals) {
                     var this_part = "";
-                    if(key_.includes('ACC')){
+                    if (key_.includes('ACC')) {
                         this_part = 'ACC';
-                    }else if(key_.includes('GYRO')){
+                    } else if (key_.includes('GYRO')) {
                         this_part = 'GYRO';
-                    }else if(key_.includes('EOG')){
+                    } else if (key_.includes('EOG')) {
                         this_part = 'EOG';
-                    }else{
+                    } else {
                         continue;
                     }
-                        
+
                     dataset_[this_part].push({
                         fill: false,
                         pointRadius: 0,
                         borderColor: LINE_COLOR[key_],
-                        bezierCurve : false,
+                        bezierCurve: false,
                         label: key_,
-                        data : one_trial.sensor_vals[key_],
-                        
-                        });
-                    
+                        data: one_trial.sensor_vals[key_],
+
+                    });
+
                 }
                 var accData = {
-                    labels : one_trial.tick_label,
-                    datasets :dataset_['ACC']
+                    labels: one_trial.tick_label,
+                    datasets: dataset_['ACC']
                 }
                 var gyroData = {
-                    labels : one_trial.tick_label,
-                    datasets :dataset_['GYRO']
+                    labels: one_trial.tick_label,
+                    datasets: dataset_['GYRO']
                 }
                 var eogData = {
-                    labels : one_trial.tick_label,
-                    datasets :dataset_['EOG']
+                    labels: one_trial.tick_label,
+                    datasets: dataset_['EOG']
                 }
 
                 var steps = 10;
 
                 // draw bar chart
 
-                new Chart(document.getElementById(name+one_trial.id+'_acc'), {
-                                                                        type: 'line',
-                                                                        data: accData,
-                                                                        options: {
-                                                                                    scales: {
-                                                                                            xAxes: [{
-                                                                                                    display: false
-                                                                                            }],
-                                                                                            yAxes: [{
-                                                                                                    display: false
-                                                                                            },{ticks : {
-                                                                                                max : MIN_MAX['ACC'][1],    
-                                                                                                min : MIN_MAX['ACC'][0]
-                                                                                            }}],
-                                                                                    },
-                                                                        }
+                new Chart(document.getElementById(name + one_trial.id + '_acc'), {
+                    type: 'line',
+                    data: accData,
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                display: false
+                            }],
+                            yAxes: [{
+                                display: false,
+                                ticks: {
+                                    max: MIN_MAX['ACC'][1],
+                                    min: MIN_MAX['ACC'][0]
+                                }
+                            }],
+                        },
+                    }
 
                 });
-                new Chart(document.getElementById(name+one_trial.id+'_gyro'), {
-                                                                        type: 'line',
-                                                                        data: gyroData,
-                                                                        options: {
-                                                                                    scales: {
-                                                                                            xAxes: [{
-                                                                                                    display: false
-                                                                                            }],
-                                                                                            yAxes: [{
-                                                                                                    display: false
-                                                                                            },{ticks : {
-                                                                                                max : MIN_MAX['GYRO'][1],    
-                                                                                                min : MIN_MAX['GYRO'][0]
-                                                                                            }}],
-                                                                                    },
-                                                                        }
+                new Chart(document.getElementById(name + one_trial.id + '_gyro'), {
+                    type: 'line',
+                    data: gyroData,
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                display: false
+                            }],
+                            yAxes: [{
+                                display: false,
+                                ticks: {
+                                    max: MIN_MAX['GYRO'][1],
+                                    min: MIN_MAX['GYRO'][0]
+                                }
+                            }],
+                        },
+                    }
 
                 });
-                new Chart(document.getElementById(name+one_trial.id), {
-                                                                        type: 'line',
-                                                                        data: eogData,
-                                                                        options: {
-                                                                                    scales: {
-                                                                                            xAxes: [{
-                                                                                                    display: false
-                                                                                            }],
-                                                                                            yAxes: [{
-                                                                                                    display: false
-                                                                                            },{ticks : {
-                                                                                                max : MIN_MAX['EOG'][1],    
-                                                                                                min : MIN_MAX['EOG'][0]
-                                                                                            }}],
-                                                                                    },
-                                                                        }
+                new Chart(document.getElementById(name + one_trial.id), {
+                    type: 'line',
+                    data: eogData,
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                display: false
+                            }],
+                            yAxes: [{
+                                display: false,
+                                ticks: {
+                                    max: MIN_MAX['EOG'][1],
+                                    min: MIN_MAX['EOG'][0]
+                                }
+                            }],
+                        },
+                    }
 
                 });
 
-                
+
             }
         }
-      
 
     </script>
 
 </head>
 
-<body >
+<body>
     <title>Jins Gesture Toolkit</title>
-    
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="/">Jins Gesture Toolkit</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -228,7 +243,7 @@
             </div>
         </div>
     </nav>
-    
+
 
 
 
@@ -254,13 +269,13 @@
                 </select>
             </div>
             <button type="submit" name="action" value="runSeg" class="btn btn-primary btn-lg">Run Segmentation</button>
-            
-            
+
+
             {% if error %}
-                <p class="text-danger font-italic"><strong>Error on segmentation:</strong> {{ error }}
-            {% endif %}
-            <span></span>
-            <div class="border-top my-3"></div>
+            <p class="text-danger font-italic"><strong>Error on segmentation:</strong> {{ error }}
+                {% endif %}
+                <span></span>
+                <div class="border-top my-3"></div>
 
         </form>
         <div class="form-group">
@@ -273,14 +288,14 @@
         </div>
         <button onclick="reviewData()" name="action" value="startReview" class="btn btn-primary btn-lg">Start Review</button>
     </div>
-    
-    
+
+
     <div id="plot_charts" class="plot_charts">
     </div>
- 
-    
 
-    
+
+
+
 </body>
 
 <!-- Footer -->
