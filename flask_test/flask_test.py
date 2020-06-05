@@ -91,9 +91,9 @@ print_status = False
 
 
 app = Flask(__name__)
-# app.config['ENV'] = 'development'
-# app.config['DEBUG'] = True
-# app.config['TESTING'] = True
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
+app.config['TESTING'] = True
 
 
 
@@ -136,7 +136,8 @@ def imu_data():
             new_results = imu_get.getLastData()
             
             
-            if new_results[-5] != last_t:
+            if type(new_results)!=int and new_results[-5] != last_t:
+                # print( new_results[-3:])
                 json_data = json.dumps({'TIME': new_results[-5],
                                         'MAG_X': new_results[-3],
                                         'MAG_Y': new_results[-2],
@@ -831,7 +832,7 @@ if __name__ == '__main__':
 
 
     url = "http://127.0.0.1:5000"
-    threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
+    # threading.Timer(1.25, lambda: webbrowser.open(url) ).start()
     
     # Feed it the flask app instance 
     # ui = FlaskUI(app)
