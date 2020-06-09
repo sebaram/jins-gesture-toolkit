@@ -318,7 +318,7 @@ class JinsSocket(threading.Thread):
                                                           self.AccX[-1], self.AccY[-1], self.AccZ[-1])
         return str_
 
-    def getLast_dict_one(self, delta_value=False):
+    def getLast_dict_one(self, delta_value=False, q=None):
         if delta_value:
             eog_l = self.EogL[-1] - self.EogL_average
             eog_r = self.EogR[-1] - self.EogR_average
@@ -337,8 +337,11 @@ class JinsSocket(threading.Thread):
                         "TIME": self.TIME[-1]
                         
                             }
-                    
-            return data_dict
+            
+            if q:
+                q.put(data_dict)
+            else:
+                return data_dict
             
         data_dict = {   "ACC_X": self.AccX[-1],
                         "ACC_Y": self.AccY[-1],
@@ -354,10 +357,12 @@ class JinsSocket(threading.Thread):
                         "EOG_V": (self.EogL[-1]+self.EogR[-1])/2,
                         "TIME": self.TIME[-1]
                             }
-                    
-        return data_dict
+        if q:
+            q.put(data_dict)
+        else:
+            return data_dict            
         
-    def getLast_dict(self, size, delta_value=False):
+    def getLast_dict(self, size, delta_value=False, q=None):
         if delta_value:
             eog_l = self.EogL[-size:] - self.EogL_average
             eog_r = self.EogR[-size:] - self.EogR_average
@@ -376,8 +381,10 @@ class JinsSocket(threading.Thread):
                         "TIME": self.TIME[-size:]
                         
                             }
-                    
-            return data_dict
+            if q:
+                q.put(data_dict)
+            else:
+                return data_dict        
             
         data_dict = {   "ACC_X": list(self.AccX[-size:]),
                         "ACC_Y": list(self.AccY[-size:]),
@@ -393,8 +400,11 @@ class JinsSocket(threading.Thread):
                         "EOG_V": list((self.EogL[-size:]+self.EogR[-size:])/2),
                         "TIME": list(self.TIME[-size:])
                             }
-                    
-        return data_dict
+        if q:
+            q.put(data_dict)
+        else:
+            return data_dict        
+        
     def getLastbyTime_dict(self, dt=1000, delta_value=False):
         cur_t = self.TIME[-1]
         target_t = cur_t - dt

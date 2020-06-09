@@ -13,11 +13,12 @@ import queue
 jins_client = JinsSocket.JinsSocket(isUDP=True, Port=12562, w_size=100*60*5)
 jins_client.setConnection()
 jins_client.start()
+jins_data_q = queue.Queue(maxsize=10)
 
 imu_get = imus_UDP(Port=12563)
 imu_get.setConnection()
 imu_get.start()
-imu_data_q = queue.Queue(maxsize=100)
+imu_data_q = queue.Queue(maxsize=10)
 
 #%%
 import time
@@ -46,7 +47,9 @@ fig.canvas.mpl_connect('resize_event', on_resize)
 
 JINS_NUM = 400
 JINS_X = np.arange(JINS_NUM)
-jins_data = jins_client.getLast_dict(JINS_NUM)
+jins_client.getLast_dict(JINS_NUM, q=jins_data_q)
+jins_data = jins_data_q.get()
+jins_data_q.task_done()
 
 jins_lines = dict()
 for key, val in jins_data.items():
@@ -115,7 +118,9 @@ while True:
         imu_get.close()
         break
     
-    jins_data = jins_client.getLast_dict(JINS_NUM)
+    jins_client.getLast_dict(JINS_NUM, q=jins_data_q)
+    jins_data = jins_data_q.get()
+    jins_data_q.task_done()
     for key, val in jins_lines.items():
         val[1].set_data(JINS_X, jins_data[key])
     
