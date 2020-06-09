@@ -21,11 +21,48 @@ imu_get.start()
 imu_data_q = queue.Queue(maxsize=10)
 
 #%%
+from pynput import keyboard
+
+STOP_LOOP = False
+
+a_pressed = False
+def on_press(key):
+    global STOP_LOOP, a_pressed
+    try:
+        if key.char == 'a':
+            a_pressed = True
+        elif key.char == '1':
+            print("run device sync")
+        # print('alphanumeric key {0} pressed'.format(key.char))
+    except AttributeError:
+        print('special key {0} pressed'.format(key))
+
+def on_release(key):
+    global STOP_LOOP, a_pressed
+    print('{0} released'.format(
+        key))
+    
+    try:
+        if key.char == 'a':
+            a_pressed = False
+    except AttributeError:
+        if key == keyboard.Key.esc:
+            STOP_LOOP = True
+            
+            # Stop listener
+            return False
+
+
+# ...or, in a non-blocking fashion:
+listener = keyboard.Listener(on_press=on_press,
+                             on_release=on_release)
+listener.start()
+
+
+#%%
 import time
 from matplotlib import pyplot as plt
 import numpy as np
-import threading
-
 
 
 fig, axes = plt.subplots(4,1, figsize=(10,10))
@@ -36,12 +73,28 @@ def on_close(event):
     print("Figure closed")
 def on_resize(event):
     global axbackgrounds
-    
     axbackgrounds = []
     for one_ax in axes:
         axbackgrounds.append(event.canvas.copy_from_bbox(one_ax.bbox))
 fig.canvas.mpl_connect('close_event', on_close)
 fig.canvas.mpl_connect('resize_event', on_resize)
+
+# cnt = 0
+# cnt2 = 0
+# a_pressed = False
+# def on_press(event):
+#     global a_pressed, cnt
+#     if event.key == 'a' and not a_pressed:
+#         a_pressed = True
+#         cnt += 1
+
+# def on_release(event):
+#     global a_pressed, cnt2
+#     if event.key == 'a' and a_pressed:
+#         a_pressed = False
+#         cnt2 += 1
+# fig.canvas.mpl_connect('key_press_event', on_press)
+# fig.canvas.mpl_connect('key_release_event', on_release)
 
 
 
@@ -70,7 +123,9 @@ axes[2].set_ylim([-36000,36000])
 
 
 
-TARGET_IMU_IP = '192.168.0.12'
+# TARGET_IMU_IP = '192.168.0.12'
+TARGET_IMU_IP = '192.168.0.186'
+
 IMU_NUM = 200
 IMU_X = np.arange(IMU_NUM)
 
@@ -103,7 +158,7 @@ axes[3].set_ylim([-20,20])
 
 
 
-text = axes[1].text(0.8,0.5, "")
+text = axes[0].text(0.8,0.5, "")
 
 fig.canvas.draw()   # note that the first draw comes before setting data 
 
@@ -113,10 +168,21 @@ plt.show(block=False)
 dt=0.01
 
 while True:
-    if axes[0].has_been_closed:
+    # terminate data gathering and matplotlib window
+    if axes[0].has_been_closed or STOP_LOOP:
         jins_client.close()
         imu_get.close()
+        
+        plt.close()
         break
+        
+        
+        
+        
+        
+        
+    text.set_text("a_pressed: {} | {}".format(a_pressed, STOP_LOOP))
+    
     
     jins_client.getLast_dict(JINS_NUM, q=jins_data_q)
     jins_data = jins_data_q.get()
@@ -143,6 +209,7 @@ while True:
     for one_back in axbackgrounds:
         fig.canvas.restore_region(one_back)
 
+    axes[0].draw_artist(text)
     # redraw just the points
     for one_line in jins_lines.values():
         axes[one_line[0]].draw_artist(one_line[1])
@@ -160,3 +227,4 @@ while True:
     #http://bastibe.de/2013-05-30-speeding-up-matplotlib.html
     time.sleep(dt)
         
+print("LOOP terminated")
