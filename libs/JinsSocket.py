@@ -379,19 +379,19 @@ class JinsSocket(threading.Thread):
                     
             return data_dict
             
-        data_dict = {   "ACC_X": self.AccX[-size:],
-                        "ACC_Y": self.AccY[-size:],
-                        "ACC_Z": self.AccZ[-size:],
+        data_dict = {   "ACC_X": list(self.AccX[-size:]),
+                        "ACC_Y": list(self.AccY[-size:]),
+                        "ACC_Z": list(self.AccZ[-size:]),
                         
-                        "GYRO_X": self.GyroX[-size:],
-                        "GYRO_Y": self.GyroY[-size:],
-                        "GYRO_Z": self.GyroZ[-size:],
+                        "GYRO_X": list(self.GyroX[-size:]),
+                        "GYRO_Y": list(self.GyroY[-size:]),
+                        "GYRO_Z": list(self.GyroZ[-size:]),
                         
-                        "EOG_L": self.EogL[-size:],
-                        "EOG_R": self.EogR[-size:],
-                        "EOG_H": self.EogL[-size:]-self.EogR[-size:],
-                        "EOG_V": (self.EogL[-size:]+self.EogR[-size:])/2,
-                        "TIME": self.TIME[-size:]
+                        "EOG_L": list(self.EogL[-size:]),
+                        "EOG_R": list(self.EogR[-size:]),
+                        "EOG_H": list(self.EogL[-size:]-self.EogR[-size:]),
+                        "EOG_V": list((self.EogL[-size:]+self.EogR[-size:])/2),
+                        "TIME": list(self.TIME[-size:])
                             }
                     
         return data_dict
@@ -456,15 +456,6 @@ class JinsSocket(threading.Thread):
             return 1,self.TIME[min_i:max_i], self.EogL[min_i:max_i],self.EogR[min_i:max_i], self.GyroX[min_i:max_i],self.GyroY[min_i:max_i],self.GyroZ[min_i:max_i]
         except:
             return -1,-1
-#==============================================================================
-# Example CODE
-#==============================================================================
-# jins_client = JinsSocket(isUDP=True)
-# jins_client.setConnection()
-# jins_client.start()
-# 
-#==============================================================================
-
 
 
 def loadJinsCSV(file):

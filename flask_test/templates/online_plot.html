@@ -172,7 +172,11 @@
                             display: true
                         }],
                         yAxes: [{
-                            display: true
+                            display: true,
+                            ticks: {
+                                max: 0,
+                                min: -4000
+                            }
                             
                         }],
 
@@ -187,6 +191,16 @@
             const eog_source = new EventSource("/eog-data");
             eog_source.onmessage = function(event) {
                 const data = JSON.parse(event.data);
+//                eog_config.data.datasets[0].data = data.EOG_L;
+//                eog_config.data.datasets[1].data = data.EOG_R;
+//                eog_config.data.datasets[2].data = data.EOG_H;
+//                eog_config.data.datasets[3].data = data.EOG_V;
+//                
+//                eog_config.data.labels = data.TIME;
+
+                
+                
+                
                 if (eog_config.data.labels.length === 400) {
                     eog_config.data.labels.shift();
                     eog_config.data.datasets[0].data.shift();
@@ -194,13 +208,13 @@
                     eog_config.data.datasets[2].data.shift();
                     eog_config.data.datasets[3].data.shift();
                 }
+                
                 eog_config.data.labels.push(data.TIME);
 
                 eog_config.data.datasets[0].data.push(data.EOG_L);
                 eog_config.data.datasets[1].data.push(data.EOG_R);
                 eog_config.data.datasets[2].data.push(data.EOG_H);
                 eog_config.data.datasets[3].data.push(data.EOG_V);
-                //                config.data.datasets[0].data.push(data.EOG_L);
 
                 lineChart.update(0);
             }
@@ -219,9 +233,9 @@
                 }
                 imu_config.data.labels.push(data.TIME);
 
-                imu_config.data.datasets[0].data.push(data.MAG_X);
-                imu_config.data.datasets[1].data.push(data.MAG_Y);
-                imu_config.data.datasets[2].data.push(data.MAG_Z);
+                imu_config.data.datasets[0].data.push(data.MagX);
+                imu_config.data.datasets[1].data.push(data.MagY);
+                imu_config.data.datasets[2].data.push(data.MagZ);
 
 
                 lineChart_imu.update(0);
