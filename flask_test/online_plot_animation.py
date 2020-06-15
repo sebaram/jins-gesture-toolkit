@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  9 15:10:40 2020
+Created on Mon Jun 15 23:44:15 2020
 
-@author: kctm
+@author: JY
 """
+
 import sys
 sys.path.append("../libs")
 from sensorUDP import imus_UDP
@@ -16,6 +17,7 @@ import numpy as np
 from pynput import keyboard
 import pandas as pd
 from threading import Thread
+
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 
@@ -32,7 +34,6 @@ imu_get = imus_UDP(Port=12563)
 imu_get.setConnection()
 imu_get.start()
 imu_data_q = queue.Queue(maxsize=10)
-
 #%%
 
 STOP_LOOP = False
@@ -50,12 +51,13 @@ def on_press(key):
         
         # print('alphanumeric key {0} pressed'.format(key.char))
     except AttributeError:
-        print('special key {0} pressed'.format(key))
+        _tmp = 1
+        # print('special key {0} pressed'.format(key))
 
 def on_release(key):
-    global STOP_LOOP, a_pressed, pressed_df
-    print('{0} released'.format(
-        key))
+    global STOP_LOOP, a_pressed, pressed_df, anim
+    # print('{0} released'.format(
+    #     key))
     
     try:
         if key.char == 'a' and a_pressed:
@@ -68,10 +70,14 @@ def on_release(key):
     except AttributeError:
         if key == keyboard.Key.esc:
             STOP_LOOP = True
+            terminate_all()
+            
             
             # Stop listener
             return False
 
+    
+    
 pressed_df = pd.DataFrame(columns=['key', 'event', 'jins_time', 'imu_time'])
 
 # ...or, in a non-blocking fashion:
@@ -98,27 +104,22 @@ def press_counter(threadname):
 thread1 = Thread( target=press_counter, args=("Thread-1", ) )
 thread1.start()
 #%%
-
-
-
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 fig, axes = plt.subplots(5,1, figsize=(10,10))
-axes[0].has_been_closed = False
 
-def on_close(event):
-    event.canvas.figure.axes[0].has_been_closed = True
-    print("Figure closed")
-def on_resize(event):
-    global axbackgrounds
-    axbackgrounds = []
-    for one_ax in axes:
-        axbackgrounds.append(event.canvas.copy_from_bbox(one_ax.bbox))
-fig.canvas.mpl_connect('close_event', on_close)
-fig.canvas.mpl_connect('resize_event', on_resize)
-
-
-
-
+def terminate_all():
+    global ani, jins_client, imu_get
+    try:
+        ani.event_source.stop()
+    except:
+        print("cannot detect 'anim'")    
+    
+    jins_client.close()
+    imu_get.close()
+    # plt.close()
 
 
 JINS_NUM = 400
@@ -190,76 +191,40 @@ axes[4].set_title("Pressed")
 
 
 text = axes[4].text(0.8,0.5, "")
-
-fig.canvas.draw()   # note that the first draw comes before setting data 
-
-# cache the background
-on_resize(fig)
-plt.show(block=False)
-
-dt=0.001
 cur_time = 0
-new_time = 0
-while True:
-    # terminate data gathering and matplotlib window
-    if axes[0].has_been_closed or STOP_LOOP:
-        jins_client.close()
-        imu_get.close()
-        
-        plt.close()
-        break
+def update(frame, *factor):
+    global cur_time
+    jins_client, imu_get = factor[0], factor[1]
+    
+    
+    jins_data = jins_client.getLast_dict(JINS_NUM)
+    
+    for key, val in jins_lines.items():
+        val[1].set_data(JINS_X, jins_data[key])
     
     new_time = current_milli_time()
     
     pressed_line.set_data(IMU_X, pressed_log)
+    
+    new_time = current_milli_time()
     text.set_text("dt:{:03}ms |a_pressed: {}".format(new_time-cur_time,a_pressed))
+    cur_time = new_time
     
-    
-    jins_client.getLast_dict(JINS_NUM, q=jins_data_q)
-    jins_data = jins_data_q.get()
-    jins_data_q.task_done()
-    for key, val in jins_lines.items():
-        val[1].set_data(JINS_X, jins_data[key])
-    
-    
-    imu_get.getDATA(IMU_NUM, imu_data_q)
-    imu_data = imu_data_q.get()[TARGET_IMU_IP]
-    imu_data_q.task_done()
-
+    imu_data = imu_get.getDATA(IMU_NUM)[TARGET_IMU_IP]
     imu_lines['MagX'][1].set_data(IMU_X, imu_data[:,13])
     imu_lines['MagY'][1].set_data(IMU_X, imu_data[:,14])
     imu_lines['MagZ'][1].set_data(IMU_X, imu_data[:,15])
     imu_lines['Gx'][1].set_data(IMU_X, imu_data[:,1])
     imu_lines['Gy'][1].set_data(IMU_X, imu_data[:,2])
     imu_lines['Gz'][1].set_data(IMU_X, imu_data[:,3])
-
-    # text.set_text("testing")
-    #print tx
-
-    # restore background
-    for one_back in axbackgrounds:
-        fig.canvas.restore_region(one_back)
-
     
-    axes[4].draw_artist(text)
-    axes[4].draw_artist(pressed_line)
-    
-    # redraw just the points
-    for one_line in jins_lines.values():
-        axes[one_line[0]].draw_artist(one_line[1])
-    for one_line in imu_lines.values():
-        axes[one_line[0]].draw_artist(one_line[1])
+    artists = [one_[1] for one_ in imu_lines.values()] +\
+                [one_[1] for one_ in jins_lines.values()] +\
+                [text, pressed_line]
+    return tuple(artists)
 
-    # fill in the axes rectangle
-    for one_ax in axes:
-        fig.canvas.blit(one_ax.bbox)
-
-    fig.canvas.flush_events()
-    #alternatively you could use
-    #plt.pause(0.000000000001) 
-    # however plt.pause calls canvas.draw(), as can be read here:
-    #http://bastibe.de/2013-05-30-speeding-up-matplotlib.html
-    cur_time = new_time
-    time.sleep(dt)
-        
-print("LOOP terminated")
+ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
+                    fargs=(jins_client, imu_get),
+                    interval=10,
+                    blit=True)
+plt.show(block=False)
