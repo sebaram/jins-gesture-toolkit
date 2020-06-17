@@ -27,8 +27,8 @@ jins_client.start()
 jins_data_q = queue.Queue(maxsize=10)
 
 
-# TARGET_IMU_IP = '192.168.0.12'
-TARGET_IMU_IP = '192.168.0.186'
+TARGET_IMU_IP = '192.168.0.12'
+# TARGET_IMU_IP = '192.168.0.186'
 
 imu_get = imus_UDP(Port=12563)
 imu_get.setConnection()
@@ -108,8 +108,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-fig, axes = plt.subplots(5,1, figsize=(10,10))
 
+ROW, COL = 5, 3
+fig, axes = plt.subplots(ROW,COL, figsize=(15,10))
+
+if COL==1:
+    axes = axes.reshape(5, 1)
+    
 def terminate_all():
     global ani, jins_client, imu_get
     try:
@@ -121,6 +126,7 @@ def terminate_all():
     imu_get.close()
     # plt.close()
 
+# basic Jins
 
 JINS_NUM = 400
 JINS_X = np.arange(JINS_NUM)
@@ -131,24 +137,35 @@ jins_data_q.task_done()
 jins_lines = dict()
 for key, val in jins_data.items():
     if key in ["EOG_L","EOG_R","EOG_H","EOG_V"]:
-        line, = axes[0].plot(val, lw=3)
+        line, = axes[0,0].plot(val, lw=3, label=key)
+        jins_lines[key] = ((0,0), line)
         
-        jins_lines[key] = (0, line)
-    if key in ["GYRO_X","GYRO_Y","GYRO_Z"]:
-        line, = axes[2].plot(val, lw=3)
+    elif key in ["GYRO_X","GYRO_Y","GYRO_Z"]:
+        line, = axes[1,0].plot(val, lw=3, label=key)
+        jins_lines[key] = ((1,0), line)
         
-        jins_lines[key] = (2, line)
-axes[0].set_xlim(0,JINS_NUM)
-axes[0].set_ylim([-2000,2000])
-axes[0].set_title("Jins EOG")
-
-axes[2].set_xlim(0,JINS_NUM)
-axes[2].set_ylim([-36000,36000])
-axes[2].set_title("Jins Gyro")
-
-
+    elif key in ["ACC_X","ACC_Y","ACC_Z"]:
+        line, = axes[2,0].plot(val, lw=3, label=key)
+        jins_lines[key] = ((2,0), line)
+        
+axes[0,0].set_xlim(0,JINS_NUM)
+axes[0,0].set_ylim([-2000,2000])
+axes[0,0].set_title("Jins EOG")
+axes[0,0].legend(loc=2)
 
 
+axes[1,0].set_xlim(0,JINS_NUM)
+axes[1,0].set_ylim([-36000,36000])
+axes[1,0].set_title("Jins Gyro")
+axes[1,0].legend(loc=2)
+
+axes[2,0].set_xlim(0,JINS_NUM)
+axes[2,0].set_ylim([-36000,36000])
+axes[2,0].set_title("Jins ACC")
+axes[2,0].legend(loc=2)
+
+
+# basic IMU
 
 IMU_NUM = 200
 IMU_X = np.arange(IMU_NUM)
@@ -157,40 +174,70 @@ imu_get.getDATA(IMU_NUM, imu_data_q)
 imu_data = imu_data_q.get()[TARGET_IMU_IP]
 imu_data_q.task_done()
 
-imu_lines = dict()
-line, = axes[1].plot(imu_data[:,13], lw=3)
-imu_lines['MagX'] = (1,line)
-line, = axes[1].plot(imu_data[:,14], lw=3)
-imu_lines['MagY'] = (1,line)
-line, = axes[1].plot(imu_data[:,15], lw=3)
-imu_lines['MagZ'] = (1,line)
+imu_lines_all = []
+for i in [1,2]:
+    imu_lines = dict()
+    
+    
+    target_ax = (0,1)
+    line, = axes[target_ax].plot(imu_data[:,13], lw=3, label="MagX")
+    imu_lines['MagX'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,14], lw=3, label="MagY")
+    imu_lines['MagY'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,15], lw=3, label="MagZ")
+    imu_lines['MagZ'] = (target_ax,line)
+    axes[target_ax].set_xlim(0,IMU_NUM)
+    axes[target_ax].set_ylim([-5000,5000])
+    axes[target_ax].set_title("Watch MAG")
+    axes[target_ax].legend(loc=2)
+    
+    target_ax = (1,1)
+    line, = axes[target_ax].plot(imu_data[:,1], lw=3, label="Gx")
+    imu_lines['Gx'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,2], lw=3, label="Gy")
+    imu_lines['Gy'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,3], lw=3, label="Gz")
+    imu_lines['Gz'] = (target_ax,line)
+    axes[target_ax].set_xlim(0,IMU_NUM)
+    axes[target_ax].set_ylim([-20,20])
+    axes[target_ax].set_title("Watch Gyro")
+    axes[target_ax].legend(loc=2)
+    
+    target_ax = (2,1)
+    line, = axes[target_ax].plot(imu_data[:,1], lw=3, label="Ax")
+    imu_lines['Ax'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,2], lw=3, label="Ay")
+    imu_lines['Ay'] = (target_ax,line)
+    line, = axes[target_ax].plot(imu_data[:,3], lw=3, label="Az")
+    imu_lines['Az'] = (target_ax,line)
+    axes[target_ax].set_xlim(0,IMU_NUM)
+    axes[target_ax].set_ylim([-20,20])
+    axes[target_ax].set_title("Watch ACC")
+    axes[target_ax].legend(loc=2)
+    
+    target_ax = (3,1)
+    sum_ = np.abs(np.diff(imu_data[:,13:16], axis=0)).sum(axis=1)
+    line, = axes[target_ax].plot(sum_, lw=3, label="MagSUM")
+    imu_lines['MagSUM'] = (target_ax,line)
+    
+    axes[target_ax].set_xlim(0,IMU_NUM)
+    axes[target_ax].set_ylim([-1,1500])
+    axes[target_ax].set_title("Watch MAG SUM")
+    axes[target_ax].legend(loc=2)
+    
+    imu_lines_all.append(imu_lines)
+
+# Additional info
+pressed_line, = axes[4,0].plot(pressed_log, lw=3, label="pressed")
+axes[4,0].set_xlim(0,IMU_NUM)
+axes[4,0].set_ylim([0,1.2])
+axes[4,0].set_title("Pressed")
+axes[4,0].legend(loc=2)
 
 
-line, = axes[3].plot(imu_data[:,1], lw=3)
-imu_lines['Gx'] = (3,line)
-line, = axes[3].plot(imu_data[:,2], lw=3)
-imu_lines['Gy'] = (3,line)
-line, = axes[3].plot(imu_data[:,3], lw=3)
-imu_lines['Gz'] = (3,line)
+text = axes[4,0].text(0.8,0.5, "")
 
 
-axes[1].set_xlim(0,IMU_NUM)
-axes[1].set_ylim([-1000,1000])
-axes[1].set_title("Watch MAG")
-
-axes[3].set_xlim(0,IMU_NUM)
-axes[3].set_ylim([-20,20])
-axes[3].set_title("Watch Gyro")
-
-
-
-pressed_line, = axes[4].plot(pressed_log, lw=3)
-axes[4].set_xlim(0,IMU_NUM)
-axes[4].set_ylim([0,1.2])
-axes[4].set_title("Pressed")
-
-
-text = axes[4].text(0.8,0.5, "")
 cur_time = 0
 def update(frame, *factor):
     global cur_time
@@ -210,15 +257,26 @@ def update(frame, *factor):
     text.set_text("dt:{:03}ms |a_pressed: {}".format(new_time-cur_time,a_pressed))
     cur_time = new_time
     
-    imu_data = imu_get.getDATA(IMU_NUM)[TARGET_IMU_IP]
-    imu_lines['MagX'][1].set_data(IMU_X, imu_data[:,13])
-    imu_lines['MagY'][1].set_data(IMU_X, imu_data[:,14])
-    imu_lines['MagZ'][1].set_data(IMU_X, imu_data[:,15])
-    imu_lines['Gx'][1].set_data(IMU_X, imu_data[:,1])
-    imu_lines['Gy'][1].set_data(IMU_X, imu_data[:,2])
-    imu_lines['Gz'][1].set_data(IMU_X, imu_data[:,3])
+    imu_data_all = list(imu_get.getDATA(IMU_NUM).values())
     
-    artists = [one_[1] for one_ in imu_lines.values()] +\
+    for i, imu_data_1 in enumerate(imu_data_all):
+        imu_lines_all[i]['MagX'][1].set_data(IMU_X, imu_data_1[:,13])
+        imu_lines_all[i]['MagY'][1].set_data(IMU_X, imu_data_1[:,14])
+        imu_lines_all[i]['MagZ'][1].set_data(IMU_X, imu_data_1[:,15])
+        imu_lines_all[i]['Gx'][1].set_data(IMU_X, imu_data_1[:,1])
+        imu_lines_all[i]['Gy'][1].set_data(IMU_X, imu_data_1[:,2])
+        imu_lines_all[i]['Gz'][1].set_data(IMU_X, imu_data_1[:,3])
+        imu_lines_all[i]['Ax'][1].set_data(IMU_X, imu_data_1[:,4])
+        imu_lines_all[i]['Ay'][1].set_data(IMU_X, imu_data_1[:,5])
+        imu_lines_all[i]['Az'][1].set_data(IMU_X, imu_data_1[:,6])
+        
+        sum_ = np.abs(np.diff(imu_data_1[:,13:16], axis=0)).sum(axis=1)
+    
+        imu_lines['MagSUM'][1].set_data(IMU_X[:-1], sum_)
+
+    
+    artists = [one_[1] for one_ in imu_lines[0].values()] +\
+                [one_[1] for one_ in imu_lines[1].values()] +\
                 [one_[1] for one_ in jins_lines.values()] +\
                 [text, pressed_line]
     return tuple(artists)
@@ -227,4 +285,5 @@ ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
                     fargs=(jins_client, imu_get),
                     interval=10,
                     blit=True)
+plt.tight_layout()
 plt.show(block=False)
