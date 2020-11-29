@@ -11,7 +11,7 @@ The gesture toolkit contains a traditional classifier pipeline with GUI, which h
 ## Instructions
 
 ### 1.Gesture Training Part(web)
-![Gesture Training Part(web)](https://github.com/sebaram/jins-gesture-toolkit/pic/ocular_mltoolkit_main.JPG)
+![Gesture Training Part(web)](https://github.com/sebaram/jins-gesture-toolkit/blob/master/pic/ocular_mltoolkit_main.JPG?raw=true)
 
 a.  Type the name of gestures what they want to classify and choose the number of repetition to collect trials and time duration
 b. (after data collection) Choose the segmentation method to create ground truth data and review it whether data collected and segmented correctly
@@ -19,7 +19,7 @@ c. Choose the preprocessing techniques to apply, choose the model to train, and 
 
 ### 2.Data Collecting Prompt
 
-![Data Collecting Prompt](https://github.com/sebaram/jins-gesture-toolkit/pic/ocular_mltoolkit_pygame.JPG)
+![Data Collecting Prompt](https://github.com/sebaram/jins-gesture-toolkit/blob/master/pic/ocular_mltoolkit_pygame.JPG?raw=true)
 Pree right arrow key in keyboard to continue.
 
 
