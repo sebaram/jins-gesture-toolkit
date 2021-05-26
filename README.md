@@ -20,7 +20,7 @@ c. Choose the preprocessing techniques to apply, choose the model to train, and 
 ### 2.Data Collecting Prompt
 
 ![Data Collecting Prompt](https://github.com/sebaram/jins-gesture-toolkit/blob/master/pic/ocular_mltoolkit_pygame.JPG?raw=true)  
-Pree right arrow key in keyboard to continue.  
+Press right arrow key in keyboard to continue.  
 
 
 
