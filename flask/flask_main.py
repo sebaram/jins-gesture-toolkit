@@ -309,11 +309,14 @@ def review_data():
             print("selected_segment_method: ",selected_segment_method)
             
             trial_schedule_df = pd.read_pickle(os.path.join(save_folder,selected_exp+".pickle"))
-            jins_data_df = pd.read_csv(os.path.join(save_folder,selected_exp+"_JINS.csv"))
-            if 'Basic' in selected_segment_method :
+            jins_data_df = pd.read_csv(os.path.join(save_folder,selected_exp+"_JINS.csv"), index_col=0)
+            jins_data_df = jins_data_df[(jins_data_df.T != 0).any()]
+            if len(jins_data_df)<100:
+                error = selected_exp + f"- no proper sensor data collected==(too small jins data:{len(jins_data_df)}frames)"
+            elif 'Basic' in selected_segment_method :
                 new_df = putIMUinDF(trial_schedule_df, jins_data_df)
                 if len(new_df)==0:
-                    error = selected_exp
+                    error = selected_exp + "- no proper sensor data collected"
                 else:
                     new_df.to_pickle(os.path.join(save_folder,selected_exp+"_segmented.pickle"))
                     seg_list = refresh_segDataList(save_folder)
@@ -382,7 +385,15 @@ def refreshtrainingDataList(save_folder):
     all_pickles = [f for f in os.listdir(save_folder) if '.pickle' in f]
     exp_names = [f.split(".")[0] for f in all_pickles if 'EXP1.pickle' in f]
     
+
     exps_has_jins = [f for f in exp_names if os.path.exists(os.path.join(save_folder,f+"_JINS.csv"))]
+    # for f in exp_names:
+    #     jins_name = os.path.join(save_folder,f+"_JINS.csv")
+    #     if os.path.exists(jins_name):
+    #         jins_df = pd.read_csv(jins_name,index_col=0)
+    #         jins_df = jins_df[(jins_df.T != 0).any()]
+    #         if len(jins_df)>100:
+    #             exps_has_jins.append(f)
     return reversed(exps_has_jins)
 def refresh_segDataList(save_folder):
     all_pickles = [f for f in os.listdir(save_folder) if 'segmented.pickle' in f]
@@ -397,7 +408,10 @@ def putIMUinDF(data_df, imu_df, post_fix=""):
         end_t = row['CurrentTime']
         
         this_trial_imu_df = imu_df.loc[(start_t<imu_df.EpochTime) & (imu_df.EpochTime<end_t)]
-        new_df.at[i, 'DATA%s'%post_fix] = this_trial_imu_df
+        if len(this_trial_imu_df)>0:
+            new_df.at[i, 'DATA%s'%post_fix] = this_trial_imu_df
+        else:
+            new_df.drop([i], inplace=True)
         
     return new_df
 
