@@ -9,7 +9,7 @@ import struct
 import time
 import pickle
 import os
-import queue
+
 from datetime import datetime
 
 
@@ -44,17 +44,10 @@ class imus_UDP(threading.Thread):
         self.INPUT_EVENT_TYPE = -1
         self.POSE = 0
         
-        # ServerTime, Gx, Gy, Gz, Ax, Ay, Az, Rx, Ry, Rz, Rw, DeviceTime
-        self.dataFormat = 'ffffqffffffffff'
+        self.dataFormat = 'ffffqffffffffff' #reverse
+        self.data_column_name = "Gx,Gy,Gz,Ax,Ay,Az,ROTx,ROTy,ROTz,ROTw,DeviceTime,DeviceID,MagX,MagY,MagZ" 
         self.numData = len(self.dataFormat)+1
-        
-        self.dataHEADER = "ServerTime,Gx,Gy,Gz,Ax,Ay,Az,ROTx,ROTy,ROTz,ROTw,DeviceTime,DeviceID,MagX,MagY,MagZ"
-        self.dataHEADERlist = self.dataHEADER.split(",")
-        if self.numData != len(self.dataHEADERlist):
-            self.STOP_loop = True
-            print("incoming data format and header numbers are different!!")
-        
-
+                
         self.delay_ms = {}
         self.refresh_hz = {}
         self.last_times = {}
@@ -76,27 +69,23 @@ class imus_UDP(threading.Thread):
 #        self.INPUT_EVENT_TYPE = float_arr[-5]
         self.POSE = float_arr[-2]
     def updateDelay(self, addr, n=50):
-        local_time, remote_time = self.datas[addr][-n:,0], self.datas[addr][-n:,11]
+        local_time, remote_time = self.datas[addr][-n:,0], self.datas[addr][-n:,-1]
         self.delay_ms[addr] = np.average(local_time - remote_time)
         self.last_times[addr] = self.datas[addr][-1,-1]
         
     def updateRefresh(self, addr, n=50):
-        try:
-            remote_time = self.datas[addr][-n:,11]
-            self.refresh_hz[addr] = 1000/np.average(np.diff(remote_time))
-        except:
-            self.refresh_hz[addr] = 0
-                
+        remote_time = self.datas[addr][-n:,-1]
+        self.refresh_hz[addr] = 1000/np.average(np.diff(remote_time))
         
     def setExchangeQueue(self, q):
         self.queue = q
-    def putDataInQueue(self, q, w_size=300):
+    def putDataInQueue(self, w_size=300):
         whole_data = {'data': self.getDATA(w_size),
                       'delay_ms': self.delay_ms,
                       'refresh_hz': self.refresh_hz,
                       'last_times': self.last_times,
                       'sync_dt': self.sync_dt}
-        q.put(whole_data)
+        self.queue.put(whole_data)
         
     
     # def setLocalIP(self):
@@ -124,7 +113,7 @@ class imus_UDP(threading.Thread):
             print("file_created: "+self.file_prefix+self.participant_name+"_"+new_id+".csv")
             if not new_id == "127.0.0.1":
                 self.datas[new_id] = np.empty((self.w_size, self.numData))
-                self.online_save_file[new_id].write(self.dataHEADER+"\n")
+                self.online_save_file[new_id].write("ServerTime,"+self.data_column_name+"\n")
 
             self.delay_ms[new_id] = 0
             self.refresh_hz[new_id] = 0
@@ -142,7 +131,7 @@ class imus_UDP(threading.Thread):
                 self.online_save_file[one_key] = open(self.file_prefix+self.participant_name+"_"+one_key+".csv","w") 
                 if not one_key == "127.0.0.1":
                     self.datas[one_key] = np.empty((self.w_size, self.numData))
-                    self.online_save_file[new_id].write(self.dataHEADER+"\n")
+                    self.online_save_file[new_id].write("ServerTime"+self.data_column_name+"\n")
 
                 self.delay_ms[new_id] = 0
                 self.refresh_hz[new_id] = 0
@@ -154,33 +143,36 @@ class imus_UDP(threading.Thread):
             
         print("DATA reset done")    
             
-    def getLastData(self, addr=None, q=None):
-        if not self.INITIALIZED:
-            return np.zeros(self.numData)
-        if addr==None and len(self.datas)==1:
-            if q:
-                q.put(self.datas[list(self.datas.keys())[0]][-1,:])
-            else:
-                return self.datas[list(self.datas.keys())[0]][-1,:]
-        else:
-            if q:
-                q.put(self.datas[addr][-1,:])
-            else:
-                return self.datas[addr][-1,:]
-    def getDATA(self, w_size=300, q=None):
+    def getLastData(self, addr=None):
         if not self.INITIALIZED:
             return -1
-
+        if addr==None and len(self.datas)==1:
+            return self.datas[list(self.datas.keys())[0]][-1,:]
+        else:
+            return self.datas[addr][-1,:]
+    def getDATA(self, w_size=300):
+        if not self.INITIALIZED:
+            return -1
+        
         if len(self.datas)>0:
             filtered_datas = dict()
             for one_key in self.datas.keys():
                 filtered_datas[one_key] = self.datas[one_key][-w_size:,:]
-                
-            if q:
-                q.put(filtered_datas)
-            else:
-                return filtered_datas
-   
+            return filtered_datas
+#==============================================================================
+#         if len(self.datas)==1:
+# #            return self.datas[list(self.datas.keys())[0]][~np.isnan(self.datas[list(self.datas.keys())[0]]).all(axis=1)]
+#             return self.datas[list(self.datas.keys())[0]][-w_size,:]
+# #            return self.datas[list(self.datas.keys())[0]]
+#         else:
+#             filtered_datas = dict()
+#             for one_key in self.datas.keys():
+#                 filtered_datas[one_key] = self.datas[one_key][-w_size,:]
+# #                filtered_datas[one_key] = self.datas[one_key][~np.isnan(self.datas[one_key]).all(axis=1)]
+#             return filtered_datas
+#==============================================================================
+
+           
         
     def run(self):
         self.PAUSE_loop = False
@@ -215,8 +207,6 @@ class imus_UDP(threading.Thread):
                             if self.save_online:
                                 arr_str = ','.join("{:.2f}".format(x) for x in float_arr)
                                 self.online_save_file[address[0]].write(arr_str+"\n")
-                                
-                            
                         except:
                             if self.debug_mode:
                                 self.logger.info("New comer/Error on parsing: {}".format(address))
@@ -276,7 +266,6 @@ if __name__ == "__main__":
                 print("from:{} | {}sec count: {}".format(key, dt, count))
             
             one_row = imu_get.getLastData()
-            print("last_t: {:.2f}".format(one_row[11]))
             last_t = one_row[0]
         
         time.sleep(dt)

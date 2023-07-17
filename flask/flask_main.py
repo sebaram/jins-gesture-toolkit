@@ -39,6 +39,7 @@ from flask import Response
 sys.path.append("../libs")
 from sensorUDP import imus_UDP
 import JinsSocket
+from DataSender import DataSender
 from NoseExperiment_clean import Experiment 
 from pygameDisplay import showResult  
 import methods_filter, methods_feature, methods_model
@@ -52,10 +53,12 @@ participant_name = "P0" # put name of participant
 number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
 # target_gestures = ["Face touch", "null"]
-target_gestures = ['nose right', 'nose left',
-                   'left eye', 'right eye',
-                   'mouth left', 'mouth right',
-                   'null']
+# target_gestures = ['nose right', 'nose left',
+#                    'left eye', 'right eye',
+#                    'mouth left', 'mouth right',
+#                    'null']
+target_gestures = ['left.in>>OUT', 'right.in>>OUT', 'up.in>>OUT', 'down.in>>OUT']
+# target_gestures = ['left.in>>OUT', 'right.in>>OUT', 'up.in>>OUT', 'down.in>>OUT', 'left.in<<OUT', 'right.in<<OUT', 'up.in<<OUT', 'down.in<<OUT']
 
 
 enable_experiment = True # set False for just testing classifier
@@ -706,14 +709,18 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         # jins_client = JinsSocket.JinsSocket(isUDP=False, Port=12562, w_size=saving_size, save_name=save_name_str)
         jins_client.setConnection()
         jins_client.start()
+    if not 'imu_get' in globals():
+        imu_get = imus_UDP(Port=12563)
+        imu_get.setConnection()
+        imu_get.start()
     
 
     exp1 = Experiment(experiment_mode,
                       name = participant_name, trial_num = trial_numbers, size = size,
-                      typeText = targetType, tts=True) 
+                      typeText = targetType, tts=False)
     #                  ,typeSound = typeSound)
     exp1.setDataCollection(time_before=time_before,time_recording=time_recording)
-    
+    data_sender = DataSender("192.168.0.67",11563)
     if show_online:
         """load/init classifier"""
         load_model_and_info = load(model_name)
@@ -777,6 +784,14 @@ def runPygame(participant_name, trial_numbers, target_gestures,
                 current_state = exp1.current_state
                 toggle = exp1.checkStateChange() 
                 exp1.drawPyGame1(screen)
+
+                # send toggle signal to watch
+                target = exp1.targetTypeDirection
+                target_str = exp1.typeText[target]
+                str_list = target_str.lower().split(".")
+                direction = "in" if "<<" in str_list[1] else "out"
+                data_sender.sendDirection(str_list[0], direction)
+
                 
                 
         elif show_online:
