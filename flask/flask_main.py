@@ -789,7 +789,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
                 target = exp1.targetTypeDirection
                 target_str = exp1.typeText[target]
                 str_list = target_str.lower().split(".")
-                direction = "in" if "<<" in str_list[1] else "out"
+                direction = "in" if ">>" in str_list[1] else "out"
                 data_sender.sendDirection(str_list[0], direction)
 
                 
