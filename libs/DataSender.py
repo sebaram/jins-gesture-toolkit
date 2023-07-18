@@ -11,6 +11,10 @@ class DataSender():
 
         self.dataFormat = dataFormat
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        self.last_direction_sent = -1
+        self.last_direction = ""
+        self.last_bezel_side = ""
     def sendData(self, data_list:list):
         if len(data_list) != len(self.dataFormat)-1:
             print("Data length is not matched with dataFormat: get:{}, expected:{}".format(len(data_list), len(self.dataFormat)-1))
@@ -23,6 +27,9 @@ class DataSender():
         arr.reverse()
         self.serverSocket.sendto(arr, (self.IP, self.Port))
     def sendDirection(self, direction:str, bezel_side:str="in"):
+        if self.last_direction == direction and self.last_bezel_side==bezel_side and current_millis()-self.last_direction_sent < 1000:
+            return
+
         data_list = [23]+[-99,-99,-99,-99,-99,-99,-99,-99,-99]
 
         data_list[3] = 1 if bezel_side=="in" else -1   # inside-out
@@ -42,6 +49,10 @@ class DataSender():
             print("Wrong direction: {}".format(direction))
             return
         self.sendData(data_list)
+
+        self.last_direction_sent = current_millis()
+        self.last_direction = direction
+        self.last_bezel_side = bezel_side
 
 if __name__ == "__main__":
 

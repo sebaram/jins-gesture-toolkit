@@ -57,7 +57,8 @@ number_of_trials = 5
 #                    'left eye', 'right eye',
 #                    'mouth left', 'mouth right',
 #                    'null']
-target_gestures = ['left.in>>OUT', 'right.in>>OUT', 'up.in>>OUT', 'down.in>>OUT']
+target_gestures = ['left.in', 'right.in', 'up.in', 'down.in']
+# target_gestures = ['left.in>>OUT', 'right.in>>OUT', 'up.in>>OUT', 'down.in>>OUT']
 # target_gestures = ['left.in>>OUT', 'right.in>>OUT', 'up.in>>OUT', 'down.in>>OUT', 'left.in<<OUT', 'right.in<<OUT', 'up.in<<OUT', 'down.in<<OUT']
 
 
@@ -68,6 +69,7 @@ save_folder = "CollectedData"
 save_trained_folder = "TrainedModel"
 save_plot_figure = True
 experiment_mode = 1 #1: auto time count, 2:wait till succeed
+exp_auto_start = True
 
 time_before = 2     #for all experiment mode. sec before start recording after press key
 time_recording = 2 # only for experiment mode 1
@@ -246,7 +248,7 @@ def save_trained_model():
 
 @app.route('/', methods=['GET', 'POST'])
 def init_data_gathering():
-    global participant_name, target_gestures, number_of_trials, pygame_is_running, enable_experiment, isTraining, save_result
+    global participant_name, target_gestures, number_of_trials, pygame_is_running, enable_experiment, isTraining, save_result, time_before, time_recording
     
     
     # for button
@@ -717,7 +719,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
 
     exp1 = Experiment(experiment_mode,
                       name = participant_name, trial_num = trial_numbers, size = size,
-                      typeText = targetType, tts=False)
+                      typeText = targetType, tts=True)
     #                  ,typeSound = typeSound)
     exp1.setDataCollection(time_before=time_before,time_recording=time_recording)
     data_sender = DataSender("192.168.0.67",11563)
@@ -778,6 +780,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         
         if enable_experiment:
             """for data collection"""
+            if experiment_mode in [1,2,3] and exp1.current_state==0 and exp_auto_start and len(exp1.trialDF)>0:
+                exp1.startRecording()
             
             if experiment_mode in [1,2,3]:
                 target_res = exp1.countDetectionResult(cur_res)
@@ -789,7 +793,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
                 target = exp1.targetTypeDirection
                 target_str = exp1.typeText[target]
                 str_list = target_str.lower().split(".")
-                direction = "in" if ">>" in str_list[1] else "out"
+                direction = "in" if "in" in str_list[1] else "out"
                 data_sender.sendDirection(str_list[0], direction)
 
                 
