@@ -51,10 +51,7 @@ participant_name = "P0" # put name of participant
 number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
 # target_gestures = ["Face touch", "null"]
-target_gestures = ['nose right', 'nose left',
-                   'left eye', 'right eye',
-                   'mouth left', 'mouth right',
-                   'null']
+target_gestures = ['Nothing', 'blink', 'deep blink', 'null']
 
 
 enable_experiment = True # set False for just testing classifier
@@ -66,7 +63,7 @@ save_plot_figure = True
 experiment_mode = 1 #1: auto time count, 2:wait till succeed
 
 time_before = 2     #for all experiment mode. sec before start recording after press key
-time_recording = 2 # only for experiment mode 1
+time_recording = 1 # only for experiment mode 1
 
 showFPS = False
 

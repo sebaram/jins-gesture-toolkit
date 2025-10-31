@@ -18,11 +18,7 @@
         }
 
         function update_charts() {
-            $SCRIPT_ROOT = {
-                {
-                    request.script_root | tojson | safe
-                }
-            };
+            $SCRIPT_ROOT = {{ request.script_root | tojson | safe }};
             $.getJSON($SCRIPT_ROOT + "/_gestureplot",
                 function(data) {
                     var el = document.getElementById('plot_charts');
