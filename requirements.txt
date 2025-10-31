@@ -1,5 +1,8 @@
 matplotlib
 scikit-learn
-pygame
+pygame==2.6.1
 playsound
-gTTS
+gTTS==2.5.4
+flask==3.0.3
+pandas
+peakdetect==1.2
