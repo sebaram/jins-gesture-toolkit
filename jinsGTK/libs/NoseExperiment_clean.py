@@ -177,7 +177,7 @@ class Experiment:
                 self.experiment_ongoing = True
                 self.start_time = current_milli_time()
                 
-                self.trialDF.at[len(self.trialDF),self.initialColumn] = [-999, self.NAME,
+                self.trialDF.loc[len(self.trialDF),self.initialColumn] = [-999, self.NAME,
                                 self.recording, self.start_time, current_milli_time(),
                                 'StartPoint', -999, self.last_name, self.last_accuracy, 
                                 self.false_index, self.false_actions[self.false_index]]
@@ -189,7 +189,10 @@ class Experiment:
                 # Play target gesture sound after press right arrow
 
                 if self.enable_tts and self.targetTypeDirection in self.typeSound.keys():
-                    playsound(self.typeSound[self.targetTypeDirection])
+                    try:
+                        playsound(self.typeSound[self.targetTypeDirection])
+                    except:
+                        print(f"Error playing sound {self.typeSound[self.targetTypeDirection]}")
                     self.start_time = current_milli_time() #set start_time after play sound
                 else:
                     self.start_time = current_milli_time()
@@ -204,7 +207,7 @@ class Experiment:
             lastTarget = self.trialDF.loc[len(self.trialDF)-1]['Target']
             lastTrialNUM = self.trialDF.loc[len(self.trialDF)-1]['TrialNum']
             
-            self.trialDF.at[self.trialDF['TrialNum']==lastTrialNUM, ['TrialNum', 'Result']] = [-1, 'CanceledTrial']
+            self.trialDF.loc[self.trialDF['TrialNum']==lastTrialNUM, ['TrialNum', 'Result']] = [-1, 'CanceledTrial']
             
             self.trial_count[lastTarget] += 1
             self.trial_index -= 1
@@ -338,7 +341,7 @@ class Experiment:
                 self.current_state = 3
                 self.allTrial_done = True
                 
-                self.trialDF.at[len(self.trialDF),self.initialColumn] = [-999, self.NAME,
+                self.trialDF.loc[len(self.trialDF),self.initialColumn] = [-999, self.NAME,
                             self.recording, current_milli_time(), current_milli_time(),
                             'EndPoint', -999, self.last_name, self.last_accuracy, 
                             self.false_index, self.false_actions[self.false_index]]
@@ -437,7 +440,7 @@ class Experiment:
         screen.blit(label2, text_rect2)
         
     def addData(self):
-        self.trialDF.at[len(self.trialDF),self.initialColumn] = [self.trial_index, self.NAME,
+        self.trialDF.loc[len(self.trialDF),self.initialColumn] = [self.trial_index, self.NAME,
                                 self.recording, self.start_time, current_milli_time(),
                                 self.typeText[self.targetTypeDirection], self.targetTypeDirection, self.last_name, self.last_accuracy, 
                                 self.false_index, self.false_actions[self.false_index]]
