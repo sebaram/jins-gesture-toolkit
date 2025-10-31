@@ -598,7 +598,7 @@ def CumulativeAverage( cur_average, last_value):
 if __name__ == "__main__":
 
     """Thread 1: DATA COLLECTION """
-    jins_client = JinsSocket(isUDP=False, Port=12562, w_size=3000, save_name="testing")
+    jins_client = JinsSocket(isUDP=True, Port=12562, w_size=3000, save_name="testing")
     jins_client.setConnection()
     jins_client.start()
     

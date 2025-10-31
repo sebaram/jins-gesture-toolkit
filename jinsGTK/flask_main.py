@@ -35,13 +35,12 @@ import json
 from flask import Response
 
 
-# import custom
-sys.path.append("../libs")
-from sensorUDP import imus_UDP
-import JinsSocket
-from NoseExperiment_clean import Experiment 
-from pygameDisplay import showResult  
-import methods_filter, methods_feature, methods_model
+# Package-relative imports from `jinsGTK.libs`
+from .libs.sensorUDP import imus_UDP
+from .libs import JinsSocket
+from .libs.NoseExperiment_clean import Experiment 
+from .libs.pygameDisplay import showResult  
+from .libs import methods_filter, methods_feature, methods_model
 
 
 

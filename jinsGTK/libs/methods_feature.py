@@ -9,7 +9,7 @@ from collections import Iterable
 
 import numpy as np
 import peakdetect
-import ECDFtools
+from jinsGTK.libs import ECDFtools
 from scipy.stats import entropy
 
 
