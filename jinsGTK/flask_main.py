@@ -354,11 +354,13 @@ def online_test():
         
         if request.form['action'] == 'startOnlinetest':
             if not pygame_is_running:
+                clf_dt = 40
                 runPygame(participant_name="test", trial_numbers=number_of_trials, target_gestures=target_gestures,
                       one_dollar_template = None,
                       enable_experiment=False, save_result=False,
                       show_online = True,
-                      model_name = f_name_model)
+                      model_name = f_name_model,
+                      classifier_dt_ms = clf_dt)
         
     return render_template('online_test.html', available_model=model_list)
 
@@ -642,12 +644,14 @@ def corr2_coeff(A,B):
 
     
 def runPygame(participant_name, trial_numbers, target_gestures,
-              one_dollar_template = None,
-              model_name = "TrainedModel/2020-05-06 16_41_12_RDFclassifier.joblib",
-              enable_experiment = True, save_result = False, show_online = False,
-              width=1280, height=720, full_screen = False,
-              background = (200,200,200, 255),
-              dt = 10):
+             one_dollar_template = None,
+             model_name = "TrainedModel/2020-05-06 16_41_12_RDFclassifier.joblib",
+             enable_experiment = True, save_result = False, show_online = False,
+             width=1280, height=720, full_screen = False,
+             background = (200,200,200, 255),
+             dt = 10,
+             classifier_dt_ms = None,
+             enable_webcam_preview = False):
     global pygame_is_running, jins_client
     pygame_is_running = True
     targetType = dict()
@@ -722,8 +726,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         for i, one_gesture in enumerate(clf_model.target_names_list):
             type_forText[i] = one_gesture
         show_pygame = showResult(pygame, screen, type_forText)
-        # Webcam setup for top-left preview
-        webcam_cap = cv2.VideoCapture(0)
+        # Webcam preview variables
+        webcam_cap = None
         webcam_w, webcam_h = 320, 240
         webcam_rect = pygame.Rect(10, 10, webcam_w, webcam_h)
         webcam_frozen = False
@@ -737,6 +741,14 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         freeze_duration_ms = 1000
         last_trigger_ms = 0
         trigger_cooldown_ms = 1000
+        if enable_webcam_preview:
+            webcam_cap = cv2.VideoCapture(0)
+        # Classifier cadence (ms). Default to render dt if not provided
+        if classifier_dt_ms is None:
+            classifier_dt_ms = dt
+        last_classify_ms = 0
+        last_res = -1
+        last_prop = []
                  
         
 
@@ -746,8 +758,8 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         
         """Pre-run"""
         screen.fill(background)
-        # Draw webcam preview (or frozen image) at top-left when online
-        if show_online:
+        # Draw webcam preview (or frozen image) at top-left when enabled
+        if show_online and enable_webcam_preview:
             ret, frame = webcam_cap.read()
             if ret:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -817,39 +829,50 @@ def runPygame(participant_name, trial_numbers, target_gestures,
                 
         elif show_online:
             """for online test"""
-            window_data = jins_client.getLastbyTime_dict(2000)
-            inputX = get_single_X(window_data, feature_creator,
-                                  load_model_and_info['TARGET_FILTER'],
-                                  load_model_and_info['TARGET_RAW_AXIS'],
-                                  load_model_and_info['TARGET_FEATURE_AXIS'])
-            
-            inputX = inputX.reshape(1, -1)
-            
-            cur_res, cur_prop = clf_model.classify_w_prob(inputX)
-            # cur_res, cur_prop = rdf_class.runJinsTypeonly(cur_t, printing=print_status)
-            
-            if len(cur_prop)>0:
-                show_pygame.showResultTextwProp(cur_res, cur_prop)
-            # Trigger photo flash and freeze when result is 1
-            if cur_res == 1 and cur_prop[1]>0.75:
-                now_ms = current_milli_time()
-                if now_ms - last_trigger_ms > trigger_cooldown_ms:
-                    last_trigger_ms = now_ms
-                    if last_webcam_surface is not None:
-                        webcam_freeze_surface = last_webcam_surface.copy()
-                        webcam_frozen = True
-                        freeze_start_ms = now_ms
-                        flash_active = True
-                        flash_start_ms = now_ms
-                        # Save captured image to disk
-                        try:
-                            capture_folder = os.path.join(save_folder, 'captures')
-                            checkFolder(capture_folder)
-                            if last_webcam_frame_bgr is not None:
-                                img_name = datetime.now().strftime('%Y-%m-%d %H_%M_%S_%f')+f'_res{cur_res}.jpg'
-                                cv2.imwrite(os.path.join(capture_folder, img_name), last_webcam_frame_bgr)
-                        except Exception as e:
-                            print('Failed to save captured image:', e)
+            now_ms = current_milli_time()
+            if now_ms - last_classify_ms >= classifier_dt_ms:
+                window_data = jins_client.getLastbyTime_dict(2000)
+                inputX = get_single_X(window_data, feature_creator,
+                                      load_model_and_info['TARGET_FILTER'],
+                                      load_model_and_info['TARGET_RAW_AXIS'],
+                                      load_model_and_info['TARGET_FEATURE_AXIS'])
+                
+                inputX = inputX.reshape(1, -1)
+                
+                cur_res, cur_prop = clf_model.classify_w_prob(inputX)
+                last_res = cur_res
+                last_prop = cur_prop
+                last_classify_ms = now_ms
+                # Trigger photo flash and freeze when result is 1
+                if len(last_prop)>1 and last_res == 1 and last_prop[1]>0.75:
+                    if now_ms - last_trigger_ms > trigger_cooldown_ms:
+                        last_trigger_ms = now_ms
+                        if enable_webcam_preview and last_webcam_surface is not None:
+                            webcam_freeze_surface = last_webcam_surface.copy()
+                            webcam_frozen = True
+                            freeze_start_ms = now_ms
+                            flash_active = True
+                            flash_start_ms = now_ms
+                            # Save captured image to disk
+                            try:
+                                if enable_webcam_preview:
+                                    capture_folder = os.path.join(save_folder, 'captures')
+                                    checkFolder(capture_folder)
+                                    if last_webcam_frame_bgr is not None:
+                                        img_name = datetime.now().strftime('%Y-%m-%d %H_%M_%S_%f')+f'_res{last_res}.jpg'
+                                        cv2.imwrite(os.path.join(capture_folder, img_name), last_webcam_frame_bgr)
+                            except Exception as e:
+                                print('Failed to save captured image:', e)
+            # Always render the most recent classification result
+            if isinstance(last_prop, (list, tuple)):
+                has_prop = len(last_prop)>0
+            else:
+                try:
+                    has_prop = len(last_prop)>0
+                except:
+                    has_prop = False
+            if has_prop:
+                show_pygame.showResultTextwProp(last_res, last_prop)
         else:
             print("need testing UI")
         
@@ -863,7 +886,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
     # Close everything down
     jins_client.close()
     try:
-        if show_online:
+        if show_online and enable_webcam_preview and webcam_cap is not None:
             webcam_cap.release()
     except:
         pass
