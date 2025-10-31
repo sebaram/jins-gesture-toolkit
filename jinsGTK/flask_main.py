@@ -41,6 +41,7 @@ from .libs import JinsSocket
 from .libs.NoseExperiment_clean import Experiment 
 from .libs.pygameDisplay import showResult  
 from .libs import methods_filter, methods_feature, methods_model
+import cv2
 
 
 
@@ -51,7 +52,7 @@ participant_name = "P0" # put name of participant
 number_of_trials = 5
 #target_gestures = ["Nothing","Left Flick", "Left Push", "Right Flick", "Right Push", "Rubbing"]
 # target_gestures = ["Face touch", "null"]
-target_gestures = ['Nothing', 'blink', 'deep blink', 'null']
+target_gestures = ['Nothing', 'blink', 'double blink', 'null']
 
 
 enable_experiment = True # set False for just testing classifier
@@ -644,7 +645,7 @@ def runPygame(participant_name, trial_numbers, target_gestures,
               one_dollar_template = None,
               model_name = "TrainedModel/2020-05-06 16_41_12_RDFclassifier.joblib",
               enable_experiment = True, save_result = False, show_online = False,
-              width=1920, height=1080, full_screen = False,
+              width=1280, height=720, full_screen = False,
               background = (200,200,200, 255),
               dt = 10):
     global pygame_is_running, jins_client
@@ -721,6 +722,21 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         for i, one_gesture in enumerate(clf_model.target_names_list):
             type_forText[i] = one_gesture
         show_pygame = showResult(pygame, screen, type_forText)
+        # Webcam setup for top-left preview
+        webcam_cap = cv2.VideoCapture(0)
+        webcam_w, webcam_h = 320, 240
+        webcam_rect = pygame.Rect(10, 10, webcam_w, webcam_h)
+        webcam_frozen = False
+        webcam_freeze_surface = None
+        last_webcam_surface = None
+        last_webcam_frame_bgr = None
+        flash_active = False
+        flash_start_ms = 0
+        flash_duration_ms = 150
+        freeze_start_ms = 0
+        freeze_duration_ms = 1000
+        last_trigger_ms = 0
+        trigger_cooldown_ms = 1000
                  
         
 
@@ -730,6 +746,30 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         
         """Pre-run"""
         screen.fill(background)
+        # Draw webcam preview (or frozen image) at top-left when online
+        if show_online:
+            ret, frame = webcam_cap.read()
+            if ret:
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame_rgb = cv2.resize(frame_rgb, (webcam_rect.width, webcam_rect.height))
+                last_webcam_surface = pygame.image.frombuffer(frame_rgb.tobytes(), (webcam_rect.width, webcam_rect.height), 'RGB')
+                last_webcam_frame_bgr = frame.copy()
+            if webcam_frozen and webcam_freeze_surface is not None:
+                screen.blit(webcam_freeze_surface, (webcam_rect.left, webcam_rect.top))
+                if current_milli_time() - freeze_start_ms > freeze_duration_ms:
+                    webcam_frozen = False
+            else:
+                if last_webcam_surface is not None:
+                    screen.blit(last_webcam_surface, (webcam_rect.left, webcam_rect.top))
+            if flash_active:
+                elapsed = current_milli_time() - flash_start_ms
+                if elapsed < flash_duration_ms:
+                    flash = pygame.Surface((webcam_rect.width, webcam_rect.height))
+                    flash.set_alpha(max(0, 255 - int(255 * (elapsed/flash_duration_ms))))
+                    flash.fill((255,255,255))
+                    screen.blit(flash, (webcam_rect.left, webcam_rect.top))
+                else:
+                    flash_active = False
         
         
         
@@ -790,6 +830,26 @@ def runPygame(participant_name, trial_numbers, target_gestures,
             
             if len(cur_prop)>0:
                 show_pygame.showResultTextwProp(cur_res, cur_prop)
+            # Trigger photo flash and freeze when result is 1
+            if cur_res == 1 and cur_prop[1]>0.75:
+                now_ms = current_milli_time()
+                if now_ms - last_trigger_ms > trigger_cooldown_ms:
+                    last_trigger_ms = now_ms
+                    if last_webcam_surface is not None:
+                        webcam_freeze_surface = last_webcam_surface.copy()
+                        webcam_frozen = True
+                        freeze_start_ms = now_ms
+                        flash_active = True
+                        flash_start_ms = now_ms
+                        # Save captured image to disk
+                        try:
+                            capture_folder = os.path.join(save_folder, 'captures')
+                            checkFolder(capture_folder)
+                            if last_webcam_frame_bgr is not None:
+                                img_name = datetime.now().strftime('%Y-%m-%d %H_%M_%S_%f')+f'_res{cur_res}.jpg'
+                                cv2.imwrite(os.path.join(capture_folder, img_name), last_webcam_frame_bgr)
+                        except Exception as e:
+                            print('Failed to save captured image:', e)
         else:
             print("need testing UI")
         
@@ -802,6 +862,11 @@ def runPygame(participant_name, trial_numbers, target_gestures,
         
     # Close everything down
     jins_client.close()
+    try:
+        if show_online:
+            webcam_cap.release()
+    except:
+        pass
     pygame.quit()
     pygame_is_running = False
     # jins_client.close()

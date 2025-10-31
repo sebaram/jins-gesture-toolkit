@@ -163,6 +163,12 @@ class JinsSocket(threading.Thread):
     def close(self):
         self.STOP_loop = True
         time.sleep(0.5)
+        try:
+            if hasattr(self, 'online_save_file') and self.online_save_file:
+                self.online_save_file.flush()
+                self.online_save_file.close()
+        except Exception as e:
+            print("JinsSocket file close error:", e)
         self.Disconnect()
     
     def Disconnect(self):

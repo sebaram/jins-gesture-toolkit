@@ -6,3 +6,4 @@ gTTS==2.5.4
 flask==3.0.3
 pandas
 peakdetect==1.2
+opencv-python
