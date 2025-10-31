@@ -29,8 +29,14 @@ class Classifier:
         if save:
             self.save_model()
     def classify_w_prob(self, inputX):
-        proba = self.clf.predict_proba(inputX)
-        result =  self.clf.predict(inputX)
+
+        try:
+            proba = self.clf.predict_proba(inputX)
+        except Exception as e:
+            print(f"Error predicting probability: {e}")
+            proba = [0 for _ in range(len(self.target_names_list))]
+        
+        result = self.clf.predict(inputX)
         return result[0], proba[0]
     
     def get_confusion_matrix(self, testX, testy, cv=10, target_names_list=""):
